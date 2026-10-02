@@ -28,29 +28,40 @@ app.use(
   })
 );
 
-// CORS configuration (SACD Section 10)
+// CORS configuration
+// ALLOWED_ORIGINS env var can be a comma-separated list of extra origins
+const extraOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
+  : [];
+
 const allowedOrigins = [
   process.env.CLIENT_URL || 'http://localhost:5173',
   'http://localhost:5174',
   'http://localhost:3000',
   'https://unfazed.in',
-  'https://app.unfazed.in'
+  'https://www.unfazed.in',
+  'https://app.unfazed.in',
+  ...extraOrigins
 ];
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('CORS policy: Not allowed by CORS'));
-      }
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-  })
-);
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow server-to-server / curl (no origin header)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS policy: Origin '${origin}' not allowed`));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+};
+
+// Handle pre-flight across all routes BEFORE other middleware
+app.options('*', cors(corsOptions));
+app.use(cors(corsOptions));
 
 // Body parsers & cookies
 app.use(express.json({ limit: '10mb' }));
