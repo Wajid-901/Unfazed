@@ -62,6 +62,16 @@ if (process.env.NODE_ENV !== 'test') {
   app.use(morgan('dev'));
 }
 
+// Root endpoint for Render health probes & browser visits
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    service: 'Unfazed Practice Management SaaS API Gateway',
+    version: '1.0.0',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Health check endpoint (DEV-004)
 app.get('/api/health', (req, res) => {
   res.status(200).json({
