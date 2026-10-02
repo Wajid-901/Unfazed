@@ -3,15 +3,18 @@ const router = express.Router();
 const authenticate = require('../middleware/auth');
 const authorize = require('../middleware/rbac');
 const {
-  getSessions,
-  createSession,
-  updateSessionStatus
+    getSessions,
+    createSession,
+    updateSessionStatus,
+    getClientSessions
 } = require('../controllers/sessionController');
 
-router.use(authenticate, authorize('THERAPIST'));
+// CLIENT route — must come before /:id wildcards (none here, but good practice)
+router.get('/mine', authenticate, authorize('CLIENT'), getClientSessions);
 
-router.get('/', getSessions);
-router.post('/', createSession);
-router.put('/:id', updateSessionStatus);
+// THERAPIST routes
+router.get('/', authenticate, authorize('THERAPIST'), getSessions);
+router.post('/', authenticate, authorize('THERAPIST'), createSession);
+router.put('/:id', authenticate, authorize('THERAPIST'), updateSessionStatus);
 
 module.exports = router;
