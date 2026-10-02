@@ -7,7 +7,10 @@ const {
   clientLogin,
   refreshToken,
   logout,
-  getMe
+  getMe,
+  forgotPassword,
+  resetPassword,
+  verifyEmail
 } = require('../controllers/authController');
 const {
   registerValidator,
@@ -32,4 +35,10 @@ router.post('/refresh-token', refreshToken);
 router.post('/logout', logout);
 router.get('/me', authenticate, getMe);
 
+// Password Reset & Verification (SaaS Pre-Launch Checklist)
+router.post('/forgot-password', authLimiter, forgotPassword);
+router.post('/reset-password/:token', authLimiter, resetPassword);
+router.get('/verify-email/:token', verifyEmail);
+
 module.exports = router;
+

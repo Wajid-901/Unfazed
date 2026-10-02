@@ -82,15 +82,63 @@ const SubscriptionPage = () => {
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Tier</span>
             <div className="flex items-center gap-2 mt-1">
               <h3 className="text-xl font-bold text-slate-900">{entitlements?.planName || currentPlanKey}</h3>
-              <Badge variant="primary">Current Plan</Badge>
+              <Badge variant={user?.subscriptionStatus === 'cancelled' ? 'warning' : 'primary'}>
+                {user?.subscriptionStatus === 'cancelled' ? 'Cancelled (Expiring)' : 'Active Plan'}
+              </Badge>
             </div>
           </div>
 
-          <div className="text-right">
+          <div className="text-right flex flex-col sm:items-end">
             <span className="text-xs font-bold text-slate-700">
               {limits.currentClients} / {limits.maxClients} Clients Used
             </span>
             <span className="block text-[11px] text-slate-400">({limits.maxClients - limits.currentClients} remaining)</span>
+
+            {currentPlanKey !== 'FREE' && (
+              <div className="mt-2 flex items-center gap-2">
+                {user?.subscriptionStatus === 'cancelled' ? (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const { data } = await api.post('/subscriptions/reactivate');
+                        if (data.success) {
+                          updateUser({ subscriptionStatus: 'active' });
+                          setMessage('Subscription successfully reactivated!');
+                          fetchData();
+                        }
+                      } catch (err) {
+                        alert(err.response?.data?.message || 'Reactivation failed');
+                      }
+                    }}
+                    className="text-xs font-semibold text-primary-600 hover:underline"
+                  >
+                    Reactivate Subscription
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (window.confirm('Are you sure you want to cancel your subscription? You will retain access until the end of your billing period.')) {
+                        try {
+                          const { data } = await api.post('/subscriptions/cancel');
+                          if (data.success) {
+                            updateUser({ subscriptionStatus: 'cancelled' });
+                            setMessage(data.message);
+                            fetchData();
+                          }
+                        } catch (err) {
+                          alert(err.response?.data?.message || 'Cancellation failed');
+                        }
+                      }
+                    }}
+                    className="text-xs font-semibold text-rose-600 hover:underline"
+                  >
+                    Cancel Subscription
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

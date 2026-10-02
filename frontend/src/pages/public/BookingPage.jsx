@@ -35,6 +35,10 @@ const BookingPage = () => {
     clientPhone: '',
     presentingConcern: ''
   });
+  const [consentAgreed, setConsentAgreed] = useState(false);
+  const [payingOnline, setPayingOnline] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(null);
+  const [paymentError, setPaymentError] = useState('');
 
   // Fetch therapist info
   useEffect(() => {
@@ -79,6 +83,10 @@ const BookingPage = () => {
       setError('Please select an available time slot.');
       return;
     }
+    if (!consentAgreed) {
+      setError('Please review and check the informed consent agreement.');
+      return;
+    }
 
     setSubmitting(true);
     setError('');
@@ -87,7 +95,9 @@ const BookingPage = () => {
       const payload = {
         ...clientForm,
         date: selectedDate,
-        startTime: selectedSlot.start
+        startTime: selectedSlot.start,
+        consentAgreed: true,
+        consentTimestamp: new Date().toISOString()
       };
 
       const { data } = await api.post(`/public/therapist/${slug}/book`, payload);
@@ -98,6 +108,74 @@ const BookingPage = () => {
       setError(err.response?.data?.message || 'Booking failed. Slot may already be taken.');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handlePayNow = async () => {
+    if (!confirmedBooking) return;
+    setPayingOnline(true);
+    setPaymentError('');
+
+    try {
+      // 1. Create Order
+      const { data: orderData } = await api.post('/payments/create-order', {
+        sessionId: confirmedBooking.sessionId
+      });
+
+      if (!orderData.success) {
+        throw new Error('Failed to initiate order.');
+      }
+
+      // Check if Razorpay SDK can be opened or if in test mode
+      const isSandboxPlaceholder = orderData.keyId.includes('placeholder');
+
+      if (!isSandboxPlaceholder && window.Razorpay) {
+        const options = {
+          key: orderData.keyId,
+          amount: orderData.amount * 100,
+          currency: orderData.currency,
+          name: therapist?.name || 'Unfazed Practice',
+          description: `Therapy Consultation (${confirmedBooking.date})`,
+          order_id: orderData.orderId,
+          handler: async (response) => {
+            const verifyRes = await api.post('/payments/verify', {
+              orderId: response.razorpay_order_id,
+              paymentId: response.razorpay_payment_id,
+              signature: response.razorpay_signature,
+              paymentRecordId: orderData.paymentRecordId
+            });
+            if (verifyRes.data.success) {
+              setPaymentSuccess(verifyRes.data.payment);
+            }
+          },
+          prefill: {
+            name: confirmedBooking.client.name,
+            email: confirmedBooking.client.email
+          },
+          theme: { color: '#2563EB' }
+        };
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+      } else {
+        // Automatic Test Sandbox Verification
+        const mockPaymentId = `pay_mock_${Date.now()}`;
+        const mockSig = `mock_sig_${Date.now()}`;
+
+        const { data: verifyRes } = await api.post('/payments/verify', {
+          orderId: orderData.orderId,
+          paymentId: mockPaymentId,
+          signature: mockSig,
+          paymentRecordId: orderData.paymentRecordId
+        });
+
+        if (verifyRes.success) {
+          setPaymentSuccess(verifyRes.payment);
+        }
+      }
+    } catch (err) {
+      setPaymentError(err.response?.data?.message || err.message || 'Payment initiation failed.');
+    } finally {
+      setPayingOnline(false);
     }
   };
 
@@ -121,11 +199,20 @@ const BookingPage = () => {
         </div>
 
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">Appointment Confirmed!</h2>
+          <h2 className="text-2xl font-bold text-slate-900">
+            {paymentSuccess ? 'Payment & Appointment Confirmed!' : 'Appointment Reserved!'}
+          </h2>
           <p className="text-xs text-slate-500 mt-1">
-            Your therapy session with <strong>{therapist?.name}</strong> has been scheduled.
+            Your therapy session with <strong>{therapist?.name}</strong> is scheduled.
           </p>
         </div>
+
+        {paymentError && (
+          <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-center gap-2 text-left">
+            <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-600" />
+            <span>{paymentError}</span>
+          </div>
+        )}
 
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs text-left space-y-3 text-xs">
           <div className="flex justify-between border-b border-slate-100 pb-2">
@@ -146,15 +233,50 @@ const BookingPage = () => {
           </div>
 
           <div className="flex justify-between border-b border-slate-100 pb-2">
-            <span className="text-slate-400">Fee:</span>
-            <span className="font-semibold text-slate-800">₹{confirmedBooking.amount} (Payment on confirmation)</span>
+            <span className="text-slate-400">Session Fee:</span>
+            <span className="font-semibold text-slate-800">₹{confirmedBooking.amount}</span>
           </div>
+
+          <div className="flex justify-between border-b border-slate-100 pb-2">
+            <span className="text-slate-400">Payment Status:</span>
+            <Badge variant={paymentSuccess ? 'success' : 'warning'}>
+              {paymentSuccess ? 'Paid Online' : 'Payment Pending'}
+            </Badge>
+          </div>
+
+          {paymentSuccess && (
+            <div className="flex justify-between border-b border-slate-100 pb-2 bg-emerald-50/60 p-2.5 rounded-lg border border-emerald-100">
+              <span className="text-emerald-700 font-semibold">Receipt Number:</span>
+              <span className="font-mono font-bold text-emerald-800">{paymentSuccess.invoiceNumber}</span>
+            </div>
+          )}
 
           <div className="flex justify-between pt-1">
             <span className="text-slate-400">Clinic Address / Mode:</span>
             <span className="font-semibold text-slate-800">{therapist?.clinicAddress || 'Telehealth Online'}</span>
           </div>
         </div>
+
+        {/* Razorpay Pay Now Action */}
+        {!paymentSuccess && (
+          <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 text-center space-y-3">
+            <p className="text-xs text-slate-600 font-medium">
+              Would you like to complete payment online now via Razorpay (UPI, Google Pay, Cards)?
+            </p>
+            <Button
+              type="button"
+              variant="primary"
+              loading={payingOnline}
+              onClick={handlePayNow}
+              className="w-full sm:w-auto px-8"
+            >
+              Pay ₹{confirmedBooking.amount} Online Now
+            </Button>
+            <p className="text-[11px] text-slate-400">
+              Or you may pay directly to the therapist at the time of your consultation.
+            </p>
+          </div>
+        )}
 
         <div className="pt-2">
           <Link
@@ -167,6 +289,7 @@ const BookingPage = () => {
       </div>
     );
   }
+
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-8">
@@ -310,6 +433,30 @@ const BookingPage = () => {
           </div>
         </div>
 
+        {/* Informed Consent Checkbox (Epic 3 & Legal) */}
+        <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+          <label className="flex items-start gap-2.5 cursor-pointer">
+            <input
+              type="checkbox"
+              required
+              checked={consentAgreed}
+              onChange={(e) => setConsentAgreed(e.target.checked)}
+              className="mt-0.5 rounded border-slate-300 text-primary-600 focus:ring-primary-500 h-4 w-4"
+            />
+            <span className="text-xs text-slate-600 leading-relaxed">
+              I agree to the{' '}
+              <Link to="/terms" target="_blank" className="text-primary-600 font-semibold underline hover:text-primary-700">
+                Informed Consent Agreement
+              </Link>{' '}
+              and{' '}
+              <Link to="/privacy" target="_blank" className="text-primary-600 font-semibold underline hover:text-primary-700">
+                Privacy Policy
+              </Link>
+              , and acknowledge this is a confidential private therapy consultation.
+            </span>
+          </label>
+        </div>
+
         <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="text-xs text-slate-500 flex items-center gap-1.5">
             <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
@@ -320,7 +467,7 @@ const BookingPage = () => {
             type="submit"
             variant="primary"
             loading={submitting}
-            disabled={!selectedSlot}
+            disabled={!selectedSlot || !consentAgreed}
             className="sm:w-auto w-full"
           >
             {selectedSlot ? `Confirm Booking for ${selectedSlot.start}` : 'Select a Slot to Continue'}

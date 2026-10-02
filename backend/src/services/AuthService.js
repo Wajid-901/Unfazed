@@ -182,6 +182,108 @@ class AuthService {
       user: payload
     };
   }
+
+  /**
+   * Request password reset token
+   */
+  async requestPasswordReset(email) {
+    if (!email) {
+      const err = new Error('Email address is required');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const therapist = await Therapist.findOne({ email: email.toLowerCase().trim() });
+    if (!therapist) {
+      // Return success message to prevent user enumeration
+      return {
+        message: 'If an account with that email exists, a password reset link has been dispatched.'
+      };
+    }
+
+    const crypto = require('crypto');
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    therapist.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    therapist.resetPasswordExpires = Date.now() + 60 * 60 * 1000; // 1 hour
+    await therapist.save();
+
+    return {
+      message: 'If an account with that email exists, a password reset link has been dispatched.',
+      // In development mode, provide token for testing convenience
+      resetToken: process.env.NODE_ENV !== 'production' ? resetToken : undefined
+    };
+  }
+
+  /**
+   * Reset password using token
+   */
+  async resetPassword(token, newPassword) {
+    if (!token || !newPassword) {
+      const err = new Error('Token and new password are required');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const crypto = require('crypto');
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const therapist = await Therapist.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!therapist) {
+      const err = new Error('Password reset token is invalid or has expired');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    therapist.password = newPassword;
+    therapist.resetPasswordToken = null;
+    therapist.resetPasswordExpires = null;
+    await therapist.save();
+
+    return {
+      success: true,
+      message: 'Password has been successfully updated. You can now sign in.'
+    };
+  }
+
+  /**
+   * Verify email address
+   */
+  async verifyEmail(token) {
+    if (!token) {
+      const err = new Error('Verification token is required');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const crypto = require('crypto');
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const therapist = await Therapist.findOne({
+      emailVerificationToken: hashedToken,
+      emailVerificationExpires: { $gt: Date.now() }
+    });
+
+    if (!therapist) {
+      const err = new Error('Verification token is invalid or has expired');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    therapist.isEmailVerified = true;
+    therapist.emailVerificationToken = null;
+    therapist.emailVerificationExpires = null;
+    await therapist.save();
+
+    return {
+      success: true,
+      message: 'Email verified successfully.'
+    };
+  }
 }
 
 module.exports = new AuthService();
+

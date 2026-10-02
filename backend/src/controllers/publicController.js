@@ -207,8 +207,46 @@ const publicBookSession = async (req, res, next) => {
   }
 };
 
+const submitFeedback = async (req, res, next) => {
+  try {
+    const { type, name, email, category, severity, subject, message, stepsToReproduce, pageUrl, userAgent, userId } = req.body;
+
+    if (!name || !email || !subject || !message) {
+      return res.status(400).json({
+        success: false,
+        message: 'Name, email, subject, and message are required.'
+      });
+    }
+
+    const Feedback = require('../models/Feedback');
+    const feedback = await Feedback.create({
+      type: type || 'support',
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
+      category: category || 'General Inquiry',
+      severity: severity || 'Medium',
+      subject: subject.trim(),
+      message: message.trim(),
+      stepsToReproduce: stepsToReproduce || '',
+      pageUrl: pageUrl || '',
+      userAgent: userAgent || '',
+      userId: userId || null
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Feedback submitted successfully.',
+      feedbackId: feedback._id
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getPublicProfile,
   getPublicSlots,
-  publicBookSession
+  publicBookSession,
+  submitFeedback
 };
+

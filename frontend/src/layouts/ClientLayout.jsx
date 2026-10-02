@@ -21,6 +21,30 @@ const ClientLayout = () => {
             </div>
           </div>
 
+          <div className="flex items-center gap-1 sm:gap-2">
+            <NavLink
+              to="/client"
+              end
+              className={({ isActive }) =>
+                `px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+                  isActive ? 'bg-teal-50 text-teal-700 font-bold' : 'text-slate-600 hover:text-slate-900'
+                }`
+              }
+            >
+              <FileText className="w-3.5 h-3.5" /> Shared Records
+            </NavLink>
+            <NavLink
+              to="/client/chat"
+              className={({ isActive }) =>
+                `px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+                  isActive ? 'bg-teal-50 text-teal-700 font-bold' : 'text-slate-600 hover:text-slate-900'
+                }`
+              }
+            >
+              <MessageSquare className="w-3.5 h-3.5" /> Chat
+            </NavLink>
+          </div>
+
           <div className="flex items-center gap-4">
             <div className="text-right hidden sm:block">
               <span className="block text-xs font-semibold text-slate-800">{user?.name}</span>

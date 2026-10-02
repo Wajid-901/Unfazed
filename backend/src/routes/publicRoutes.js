@@ -4,7 +4,8 @@ const rateLimit = require('express-rate-limit');
 const {
   getPublicProfile,
   getPublicSlots,
-  publicBookSession
+  publicBookSession,
+  submitFeedback
 } = require('../controllers/publicController');
 
 // Rate limiter for public bookings (SACD Section 18: 30 req/min)
@@ -20,5 +21,7 @@ const bookingLimiter = rateLimit({
 router.get('/therapist/:slug', getPublicProfile);
 router.get('/therapist/:slug/slots', getPublicSlots);
 router.post('/therapist/:slug/book', bookingLimiter, publicBookSession);
+router.post('/feedback', submitFeedback);
 
 module.exports = router;
+

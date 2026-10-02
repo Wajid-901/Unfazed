@@ -11,6 +11,10 @@ import PublicLayout from '../layouts/PublicLayout';
 import LandingPage from '../pages/public/LandingPage';
 import LoginPage from '../pages/auth/LoginPage';
 import RegisterPage from '../pages/auth/RegisterPage';
+import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage';
+import ResetPasswordPage from '../pages/auth/ResetPasswordPage';
+import PrivacyPolicyPage from '../pages/public/PrivacyPolicyPage';
+import TermsPage from '../pages/public/TermsPage';
 import PublicProfilePage from '../pages/public/PublicProfilePage';
 import BookingPage from '../pages/public/BookingPage';
 
@@ -20,11 +24,15 @@ import CalendarPage from '../pages/therapist/CalendarPage';
 import ClientsPage from '../pages/therapist/ClientsPage';
 import ClientDetailPage from '../pages/therapist/ClientDetailPage';
 import NotesPage from '../pages/therapist/NotesPage';
+import PaymentsPage from '../pages/therapist/PaymentsPage';
+import AnalyticsPage from '../pages/therapist/AnalyticsPage';
+import ChatPage from '../pages/therapist/ChatPage';
 import SubscriptionPage from '../pages/therapist/SubscriptionPage';
 import ProfilePage from '../pages/therapist/ProfilePage';
 
 // Client Pages
 import ClientPortalPage from '../pages/client/ClientPortalPage';
+import ClientChatPage from '../pages/client/ClientChatPage';
 
 // Route Guards
 const TherapistGuard = ({ children }) => {
@@ -49,6 +57,10 @@ const AppRoutes = () => {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
+        <Route path="/terms" element={<TermsPage />} />
         <Route path="/:slug" element={<PublicProfilePage />} />
         <Route path="/:slug/book" element={<BookingPage />} />
       </Route>
@@ -67,6 +79,9 @@ const AppRoutes = () => {
         <Route path="clients" element={<ClientsPage />} />
         <Route path="clients/:id" element={<ClientDetailPage />} />
         <Route path="notes" element={<NotesPage />} />
+        <Route path="chat" element={<ChatPage />} />
+        <Route path="payments" element={<PaymentsPage />} />
+        <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="subscription" element={<SubscriptionPage />} />
         <Route path="profile" element={<ProfilePage />} />
       </Route>
@@ -81,6 +96,7 @@ const AppRoutes = () => {
         }
       >
         <Route index element={<ClientPortalPage />} />
+        <Route path="chat" element={<ClientChatPage />} />
       </Route>
 
       {/* Catch-all */}

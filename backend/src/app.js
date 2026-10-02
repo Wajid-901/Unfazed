@@ -14,6 +14,9 @@ const clientRoutes = require('./routes/clientRoutes');
 const sessionRoutes = require('./routes/sessionRoutes');
 const noteRoutes = require('./routes/noteRoutes');
 const subscriptionRoutes = require('./routes/subscriptionRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
+const analyticsRoutes = require('./routes/analyticsRoutes');
+const chatRoutes = require('./routes/chatRoutes');
 
 const app = express();
 
@@ -77,6 +80,9 @@ app.use('/api/v1/clients', clientRoutes);
 app.use('/api/v1/sessions', sessionRoutes);
 app.use('/api/v1/notes', noteRoutes);
 app.use('/api/v1/subscriptions', subscriptionRoutes);
+app.use('/api/v1/payments', paymentRoutes);
+app.use('/api/v1/analytics', analyticsRoutes);
+app.use('/api/v1/chat', chatRoutes);
 
 // 404 Route Catch-all
 app.use('*', (req, res) => {

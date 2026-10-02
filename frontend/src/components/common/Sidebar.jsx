@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -9,19 +9,28 @@ import {
   UserCheck,
   ExternalLink,
   ShieldCheck,
-  LogOut
+  LogOut,
+  Zap,
+  HelpCircle,
+  BarChart3,
+  MessageSquare
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import FeedbackModal from './FeedbackModal';
 
 const Sidebar = () => {
   const { user, logout } = useAuth();
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Calendar & Bookings', path: '/dashboard/calendar', icon: Calendar },
     { name: 'Clients (CRM)', path: '/dashboard/clients', icon: Users },
     { name: 'Clinical Notes', path: '/dashboard/notes', icon: FileText },
-    { name: 'Subscription & Plans', path: '/dashboard/subscription', icon: CreditCard },
+    { name: 'Direct Chat', path: '/dashboard/chat', icon: MessageSquare },
+    { name: 'Payments & Billing', path: '/dashboard/payments', icon: CreditCard },
+    { name: 'Practice Analytics', path: '/dashboard/analytics', icon: BarChart3 },
+    { name: 'Subscription & Plans', path: '/dashboard/subscription', icon: Zap },
     { name: 'Profile & Clinic', path: '/dashboard/profile', icon: UserCheck }
   ];
 
@@ -99,20 +108,36 @@ const Sidebar = () => {
           </NavLink>
         </div>
 
-        <div className="flex items-center justify-between px-2 pt-1">
+        <div className="flex items-center justify-between px-2 pt-1 border-t border-slate-200/50 mt-1">
           <div className="truncate pr-2">
             <p className="text-xs font-medium text-slate-900 truncate">{user?.name || 'Therapist'}</p>
             <p className="text-[11px] text-slate-400 truncate">{user?.email}</p>
           </div>
-          <button
-            onClick={logout}
-            title="Log Out"
-            className="text-slate-400 hover:text-rose-600 p-1.5 rounded-md hover:bg-rose-50 transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setFeedbackOpen(true)}
+              title="Help & Bug Report"
+              className="text-slate-400 hover:text-primary-600 p-1.5 rounded-md hover:bg-slate-100 transition-colors"
+            >
+              <HelpCircle className="w-4 h-4" />
+            </button>
+            <button
+              onClick={logout}
+              title="Log Out"
+              className="text-slate-400 hover:text-rose-600 p-1.5 rounded-md hover:bg-rose-50 transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
+
+      <FeedbackModal
+        isOpen={feedbackOpen}
+        onClose={() => setFeedbackOpen(false)}
+        defaultType="support"
+      />
     </aside>
   );
 };

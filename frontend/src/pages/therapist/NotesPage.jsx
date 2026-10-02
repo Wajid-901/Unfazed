@@ -3,6 +3,7 @@ import api from '../../api/axios';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
 import Modal from '../../components/common/Modal';
+import RichTextEditor from '../../components/common/RichTextEditor';
 import {
   FileText,
   Lock,
@@ -298,13 +299,11 @@ const NotesPage = () => {
             </div>
           ) : (
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Session Summary</label>
-              <textarea
-                rows="6"
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Session Summary (Rich Text)</label>
+              <RichTextEditor
                 value={form.body}
-                onChange={(e) => setForm({ ...form, body: e.target.value })}
-                placeholder="Write free-form session observations or client summary..."
-                className="w-full text-xs border border-slate-300 rounded-lg p-2 outline-none"
+                onChange={(html) => setForm({ ...form, body: html })}
+                placeholder="Write formatted clinical observations, insights, and takeaways..."
               />
             </div>
           )}
