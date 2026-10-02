@@ -32,7 +32,11 @@ import SubscriptionPage from '../pages/therapist/SubscriptionPage';
 import ProfilePage from '../pages/therapist/ProfilePage';
 
 // Client Pages
-import ClientPortalPage from '../pages/client/ClientPortalPage';
+import ClientDashboardPage from '../pages/client/ClientDashboardPage';
+import ClientBookingsPage from '../pages/client/ClientBookingsPage';
+import ClientPaymentsPage from '../pages/client/ClientPaymentsPage';
+import ClientNotesPage from '../pages/client/ClientNotesPage';
+import ClientProfilePage from '../pages/client/ClientProfilePage';
 import ClientChatPage from '../pages/client/ClientChatPage';
 
 // Route Guards
@@ -97,7 +101,11 @@ const AppRoutes = () => {
           </ClientGuard>
         }
       >
-        <Route index element={<ClientPortalPage />} />
+        <Route index element={<ClientDashboardPage />} />
+        <Route path="bookings" element={<ClientBookingsPage />} />
+        <Route path="payments" element={<ClientPaymentsPage />} />
+        <Route path="notes" element={<ClientNotesPage />} />
+        <Route path="profile" element={<ClientProfilePage />} />
         <Route path="chat" element={<ClientChatPage />} />
       </Route>
 
