@@ -1,0 +1,27 @@
+{
+    "id": "FEAT-002",
+    "type": "feat",
+    "description": "Add four missing backend endpoints that the client portal pages will call. This FEAT is independent of FEAT-001 (pure backend) and must be completed before FEAT-003's pages make real API calls. All four controllers are added to existing files; no new route files or app.js changes required since clientRoutes.js is already mounted at /api/v1/clients, sessionRoutes.js at /api/v1/sessions, and paymentRoutes.js at /api/v1/payments.",
+    "status": "completed",
+    "steps": [
+        "Add getClientSessions controller to backend/src/controllers/sessionController.js. Function signature: const getClientSessions = async (req, res, next). Query: Session.find({ clientId: req.user.id }).populate('therapistId', 'name title').sort({ date: -1, startTime: -1 }). Response: res.status(200).json({ success: true, sessions }). Export it alongside the existing exports.",
+        "Add GET /mine route to backend/src/routes/sessionRoutes.js. The current file applies router.use(authenticate, authorize('THERAPIST')) globally — this must be changed. Remove the router.use line. Instead, apply authenticate + authorize('THERAPIST') explicitly to the three existing routes (router.get('/', authenticate, authorize('THERAPIST'), getSessions); router.post('/', authenticate, authorize('THERAPIST'), createSession); router.put('/:id', authenticate, authorize('THERAPIST'), updateSessionStatus)). Then add: router.get('/mine', authenticate, authorize('CLIENT'), getClientSessions). Import getClientSessions from sessionController.",
+        "Add getClientPayments controller to backend/src/controllers/paymentController.js. Function signature: const getClientPayments = async (req, res, next). Query: Payment.find({ clientId: req.user.id }).populate('sessionId', 'date startTime duration status').sort({ createdAt: -1 }). Response: res.status(200).json({ success: true, payments }). Export it alongside the existing exports.",
+        "Add GET /mine route to backend/src/routes/paymentRoutes.js. The existing history route is already per-route (not router.use), so just add: router.get('/mine', authenticate, authorize('CLIENT'), getClientPayments). Import getClientPayments from paymentController. Place this route above the invoice route to avoid the :id wildcard swallowing 'mine'.",
+        "Add getMyProfile and updateMyProfile controllers to backend/src/controllers/clientController.js. getMyProfile: Client.findById(req.user.id) — note: for CLIENT role, the JWT id IS the Client document _id (confirmed by how auth login works). If not found return 404. Populate therapistId with 'name title profileImageUrl'. Return res.status(200).json({ success: true, client }). updateMyProfile: allow updating name, phone, and intakeData.emergencyContactName/emergencyContactPhone/emergencyContactRelation only. Do NOT allow email, therapistId, status, tags. Merge intakeData with spread. Save and return updated client.",
+        "Add CLIENT-role profile routes to backend/src/routes/clientRoutes.js. The current file applies router.use(authenticate, authorize('THERAPIST')) globally — same fix as sessionRoutes. Remove router.use. Re-apply middleware explicitly to all six existing routes. Then add two new routes BEFORE the /:id routes to avoid collision: router.get('/profile', authenticate, authorize('CLIENT'), getMyProfile); router.put('/profile', authenticate, authorize('CLIENT'), updateMyProfile). Import getMyProfile and updateMyProfile from clientController."
+    ],
+    "acceptance_criteria": [
+        "GET /api/v1/sessions/mine with a valid CLIENT JWT returns { success: true, sessions: [...] }",
+        "GET /api/v1/sessions/mine with a THERAPIST JWT returns 403",
+        "GET /api/v1/payments/mine with a valid CLIENT JWT returns { success: true, payments: [...] }",
+        "GET /api/v1/clients/profile with a valid CLIENT JWT returns { success: true, client: { name, email, phone, intakeData, therapistId: { name, title } } }",
+        "PUT /api/v1/clients/profile with a valid CLIENT JWT and body { name: 'New Name' } returns updated client",
+        "All existing THERAPIST routes (GET /api/v1/sessions/, POST /api/v1/sessions/, GET /api/v1/clients/, etc.) still return 200 with a THERAPIST JWT"
+    ],
+    "verification": [
+        "cd backend && node -e \"require('./src/app')\" — must require without errors, confirming no syntax issues in the modified files"
+    ],
+    "blocked_reason": null,
+    "findings": "All 6 files modified. Syntax verified clean via node --check on each file. Global router.use(authenticate, authorize('THERAPIST')) removed from sessionRoutes.js and clientRoutes.js; per-route middleware applied. New routes added: GET /sessions/mine (CLIENT), GET /payments/mine (CLIENT), GET /clients/profile (CLIENT), PUT /clients/profile (CLIENT). New controllers: getClientSessions, getClientPayments, getMyProfile, updateMyProfile. Committed at bb0fa1b."
+}
