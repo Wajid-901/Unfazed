@@ -3,12 +3,7 @@ const Client = require('../models/Client');
 const PLANS = require('../constants/plans');
 
 class EntitlementService {
-  /**
-   * Check if a therapist has access to a given feature
-   * @param {string|ObjectId} therapistId
-   * @param {string} featureName
-   * @returns {Promise<boolean>}
-   */
+  // Check if therapist's active plan includes the given feature
   async canAccess(therapistId, featureName) {
     try {
       const therapist = await Therapist.findById(therapistId).select('subscriptionPlan subscriptionStatus subscriptionExpiresAt');
@@ -30,11 +25,7 @@ class EntitlementService {
     }
   }
 
-  /**
-   * Check if a therapist can create more clients based on their tier limits
-   * @param {string|ObjectId} therapistId
-   * @returns {Promise<{ allowed: boolean, currentCount: number, limit: number }>}
-   */
+  // Check if therapist can add more clients within their plan's client limit
   async checkClientLimit(therapistId) {
     try {
       const therapist = await Therapist.findById(therapistId).select('subscriptionPlan');
@@ -55,9 +46,7 @@ class EntitlementService {
     }
   }
 
-  /**
-   * Get all active entitlements and limits for a therapist
-   */
+  // Return all plan features and current usage limits for a therapist
   async getTherapistEntitlements(therapistId) {
     const therapist = await Therapist.findById(therapistId).select('subscriptionPlan subscriptionStatus subscriptionExpiresAt');
     const planKey = therapist?.subscriptionPlan || 'FREE';

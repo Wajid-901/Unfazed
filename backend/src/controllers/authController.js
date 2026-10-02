@@ -194,6 +194,52 @@ const verifyEmail = async (req, res, next) => {
   }
 };
 
+// Client sets their own password using the invite token sent by therapist
+const setupClientPassword = async (req, res, next) => {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password || password.length < 8) {
+      return res.status(400).json({ success: false, message: 'Valid token and password (min 8 chars) are required.' });
+    }
+
+    const crypto = require('crypto');
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const client = await Client.findOne({
+      inviteToken: hashedToken,
+      inviteTokenExpires: { $gt: Date.now() }
+    }).select('+inviteToken +inviteTokenExpires');
+
+    if (!client) {
+      return res.status(400).json({ success: false, message: 'Invite link is invalid or has expired. Ask your therapist to resend the invite.' });
+    }
+
+    client.password = password;
+    client.inviteToken = undefined;
+    client.inviteTokenExpires = undefined;
+    await client.save();
+
+    const { generateAccessToken, generateRefreshToken } = require('../config/jwt');
+    const { getRefreshCookieOptions } = require('../config/jwt');
+    const ROLES = require('../constants/roles');
+
+    const payload = { id: client._id.toString(), therapistId: client.therapistId.toString(), role: ROLES.CLIENT, email: client.email, name: client.name };
+    const accessToken = generateAccessToken(payload);
+    const refreshToken = generateRefreshToken(payload);
+
+    res.cookie('refreshToken', refreshToken, getRefreshCookieOptions());
+
+    res.status(200).json({
+      success: true,
+      message: 'Password set successfully! You are now logged in.',
+      accessToken,
+      user: { id: client._id, name: client.name, email: client.email, therapistId: client.therapistId, role: 'CLIENT' }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -203,6 +249,6 @@ module.exports = {
   getMe,
   forgotPassword,
   resetPassword,
-  verifyEmail
+  verifyEmail,
+  setupClientPassword
 };
-

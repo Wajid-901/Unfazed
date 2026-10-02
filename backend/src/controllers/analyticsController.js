@@ -3,9 +3,7 @@ const Payment = require('../models/Payment');
 const Client = require('../models/Client');
 const mongoose = require('mongoose');
 
-/**
- * Get comprehensive practice analytics dashboard data
- */
+// Return full practice analytics: revenue, sessions, client growth
 const getAnalyticsDashboard = async (req, res, next) => {
   try {
     const therapistId = new mongoose.Types.ObjectId(req.user.id);

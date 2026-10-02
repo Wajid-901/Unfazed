@@ -1,43 +1,43 @@
-import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard,
-  Calendar,
-  Users,
-  FileText,
-  CreditCard,
-  UserCheck,
-  ExternalLink,
-  ShieldCheck,
-  LogOut,
-  Zap,
-  HelpCircle,
-  BarChart3,
-  MessageSquare
+  LayoutDashboard, Calendar, Users, FileText, CreditCard,
+  UserCheck, ExternalLink, ShieldCheck, LogOut, Zap, HelpCircle,
+  BarChart3, MessageSquare, X, Menu
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import FeedbackModal from './FeedbackModal';
 
-const Sidebar = () => {
-  const { user, logout } = useAuth();
-  const [feedbackOpen, setFeedbackOpen] = useState(false);
+const navItems = [
+  { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+  { name: 'Calendar & Bookings', path: '/dashboard/calendar', icon: Calendar },
+  { name: 'Clients (CRM)', path: '/dashboard/clients', icon: Users },
+  { name: 'Clinical Notes', path: '/dashboard/notes', icon: FileText },
+  { name: 'Direct Chat', path: '/dashboard/chat', icon: MessageSquare },
+  { name: 'Payments & Billing', path: '/dashboard/payments', icon: CreditCard },
+  { name: 'Practice Analytics', path: '/dashboard/analytics', icon: BarChart3 },
+  { name: 'Subscription & Plans', path: '/dashboard/subscription', icon: Zap },
+  { name: 'Profile & Clinic', path: '/dashboard/profile', icon: UserCheck }
+];
 
-  const navItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-    { name: 'Calendar & Bookings', path: '/dashboard/calendar', icon: Calendar },
-    { name: 'Clients (CRM)', path: '/dashboard/clients', icon: Users },
-    { name: 'Clinical Notes', path: '/dashboard/notes', icon: FileText },
-    { name: 'Direct Chat', path: '/dashboard/chat', icon: MessageSquare },
-    { name: 'Payments & Billing', path: '/dashboard/payments', icon: CreditCard },
-    { name: 'Practice Analytics', path: '/dashboard/analytics', icon: BarChart3 },
-    { name: 'Subscription & Plans', path: '/dashboard/subscription', icon: Zap },
-    { name: 'Profile & Clinic', path: '/dashboard/profile', icon: UserCheck }
-  ];
+// Exported so TherapistLayout can toggle it on mobile
+export const useSidebar = () => {
+  const [open, setOpen] = useState(false);
+  return { open, setOpen };
+};
+
+const SidebarContent = ({ user, logout, onClose }) => {
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const location = useLocation();
+
+  // Close sidebar on route change (mobile)
+  useEffect(() => {
+    if (onClose) onClose();
+  }, [location.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <aside className="w-64 bg-white border-r border-slate-200 flex flex-col h-screen fixed left-0 top-0 z-30">
-      {/* Brand Header */}
-      <div className="h-16 flex items-center px-6 border-b border-slate-100 justify-between">
+    <>
+      <div className="h-16 flex items-center px-6 border-b border-slate-100 justify-between flex-shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-lg bg-primary-600 text-white flex items-center justify-center font-bold text-lg shadow-sm">
             U
@@ -47,9 +47,14 @@ const Sidebar = () => {
             <span className="block text-[10px] uppercase font-semibold text-primary-600 tracking-wider">Therapist SaaS</span>
           </div>
         </div>
+        {/* Close button — mobile only */}
+        {onClose && (
+          <button onClick={onClose} className="lg:hidden p-1.5 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100">
+            <X className="w-5 h-5" />
+          </button>
+        )}
       </div>
 
-      {/* Navigation Links */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -72,7 +77,6 @@ const Sidebar = () => {
           );
         })}
 
-        {/* Public Clinic Page Direct Link */}
         {user?.slug && (
           <div className="pt-4 mt-4 border-t border-slate-100">
             <a
@@ -91,8 +95,7 @@ const Sidebar = () => {
         )}
       </nav>
 
-      {/* Subscription Tier & User Footer */}
-      <div className="p-3 border-t border-slate-100 bg-slate-50/50">
+      <div className="p-3 border-t border-slate-100 bg-slate-50/50 flex-shrink-0">
         <div className="p-3 rounded-lg bg-white border border-slate-200/80 shadow-xs mb-2">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs font-semibold text-slate-700">Plan: {user?.subscriptionPlan || 'FREE'}</span>
@@ -100,10 +103,7 @@ const Sidebar = () => {
               <ShieldCheck className="w-3 h-3 text-emerald-600" /> Active
             </span>
           </div>
-          <NavLink
-            to="/dashboard/subscription"
-            className="text-[11px] text-primary-600 hover:underline font-medium inline-block"
-          >
+          <NavLink to="/dashboard/subscription" className="text-[11px] text-primary-600 hover:underline font-medium inline-block">
             Manage subscription →
           </NavLink>
         </div>
@@ -133,12 +133,39 @@ const Sidebar = () => {
         </div>
       </div>
 
-      <FeedbackModal
-        isOpen={feedbackOpen}
-        onClose={() => setFeedbackOpen(false)}
-        defaultType="support"
-      />
-    </aside>
+      <FeedbackModal isOpen={feedbackOpen} onClose={() => setFeedbackOpen(false)} defaultType="support" />
+    </>
+  );
+};
+
+const Sidebar = ({ mobileOpen, onClose }) => {
+  const { user, logout } = useAuth();
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:flex w-64 bg-white border-r border-slate-200 flex-col h-screen fixed left-0 top-0 z-30">
+        <SidebarContent user={user} logout={logout} />
+      </aside>
+
+      {/* Mobile overlay backdrop */}
+      {mobileOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/40 z-40 backdrop-blur-sm"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Mobile drawer */}
+      <aside
+        className={`lg:hidden fixed top-0 left-0 h-full w-72 bg-white border-r border-slate-200 flex flex-col z-50 transform transition-transform duration-300 ${
+          mobileOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <SidebarContent user={user} logout={logout} onClose={onClose} />
+      </aside>
+    </>
   );
 };
 

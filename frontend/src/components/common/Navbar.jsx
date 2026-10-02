@@ -1,19 +1,27 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Bell, Search, Sparkles } from 'lucide-react';
-import { NavLink } from 'react-router-dom';
+import { Sparkles, Menu } from 'lucide-react';
 
-const Navbar = ({ pageTitle = 'Dashboard' }) => {
+const Navbar = ({ pageTitle = 'Dashboard', onMenuToggle }) => {
   const { user } = useAuth();
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-20">
-      <div>
-        <h1 className="text-xl font-bold text-slate-800 tracking-tight">{pageTitle}</h1>
+    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-20">
+      <div className="flex items-center gap-3">
+        {/* Mobile hamburger — hidden on desktop */}
+        <button
+          onClick={onMenuToggle}
+          className="lg:hidden p-2 rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors"
+          aria-label="Open menu"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+        <h1 className="text-base sm:text-xl font-bold text-slate-800 tracking-tight truncate max-w-[180px] sm:max-w-none">
+          {pageTitle}
+        </h1>
       </div>
 
-      <div className="flex items-center gap-4">
-        {/* Quick Public Link */}
+      <div className="flex items-center gap-3">
         {user?.slug && (
           <a
             href={`/${user.slug}`}
@@ -26,9 +34,8 @@ const Navbar = ({ pageTitle = 'Dashboard' }) => {
           </a>
         )}
 
-        {/* User Pill */}
-        <div className="flex items-center gap-3 pl-2">
-          <div className="w-8 h-8 rounded-full bg-primary-600 text-white font-bold text-xs flex items-center justify-center">
+        <div className="flex items-center gap-2 pl-1">
+          <div className="w-8 h-8 rounded-full bg-primary-600 text-white font-bold text-xs flex items-center justify-center flex-shrink-0">
             {user?.name ? user.name.charAt(0).toUpperCase() : 'T'}
           </div>
           <div className="hidden md:block text-left">

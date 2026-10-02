@@ -13,6 +13,7 @@ import LoginPage from '../pages/auth/LoginPage';
 import RegisterPage from '../pages/auth/RegisterPage';
 import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from '../pages/auth/ResetPasswordPage';
+import SetupPasswordPage from '../pages/auth/SetupPasswordPage';
 import PrivacyPolicyPage from '../pages/public/PrivacyPolicyPage';
 import TermsPage from '../pages/public/TermsPage';
 import PublicProfilePage from '../pages/public/PublicProfilePage';
@@ -59,6 +60,7 @@ const AppRoutes = () => {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+        <Route path="/client/setup-password" element={<SetupPasswordPage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/:slug" element={<PublicProfilePage />} />

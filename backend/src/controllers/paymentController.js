@@ -1,12 +1,8 @@
 const paymentService = require('../services/PaymentService');
 const Payment = require('../models/Payment');
 const Session = require('../models/Session');
-const Therapist = require('../models/Therapist');
-const Client = require('../models/Client');
 
-/**
- * Create order for a therapy session payment
- */
+// Create Razorpay order for a therapy session
 const createSessionOrder = async (req, res, next) => {
   try {
     const { sessionId } = req.body;
@@ -50,7 +46,7 @@ const createSessionOrder = async (req, res, next) => {
       orderId: order.id,
       amount: session.amount,
       currency: session.currency || 'INR',
-      keyId: process.env.RAZORPAY_KEY_ID || 'rzp_test_placeholder',
+      keyId: process.env.RAZORPAY_KEY_ID,
       paymentRecordId: payment._id,
       session: {
         id: session._id,
@@ -64,9 +60,7 @@ const createSessionOrder = async (req, res, next) => {
   }
 };
 
-/**
- * Verify checkout payment signature
- */
+// Verify payment signature after Razorpay checkout success
 const verifyPayment = async (req, res, next) => {
   try {
     const { orderId, paymentId, signature, paymentRecordId } = req.body;
@@ -80,38 +74,25 @@ const verifyPayment = async (req, res, next) => {
 
     const isValid = paymentService.verifyPaymentSignature({ orderId, paymentId, signature });
     if (!isValid) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid payment signature. Transaction verification failed.'
-      });
+      return res.status(400).json({ success: false, message: 'Invalid payment signature.' });
     }
 
-    // Find payment record
-    let payment = null;
-    if (paymentRecordId) {
-      payment = await Payment.findById(paymentRecordId);
-    }
-    if (!payment) {
-      payment = await Payment.findOne({ orderId });
-    }
+    let payment = paymentRecordId ? await Payment.findById(paymentRecordId) : null;
+    if (!payment) payment = await Payment.findOne({ orderId });
 
     if (!payment) {
       return res.status(404).json({ success: false, message: 'Payment record not found.' });
     }
 
     const invoiceNumber = paymentService.generateInvoiceNumber();
-
     payment.paymentId = paymentId;
     payment.signature = signature;
     payment.status = 'captured';
     payment.invoiceNumber = invoiceNumber;
     await payment.save();
 
-    // Mark session as paid
     if (payment.sessionId) {
-      await Session.findByIdAndUpdate(payment.sessionId, {
-        paymentStatus: 'paid'
-      });
+      await Session.findByIdAndUpdate(payment.sessionId, { paymentStatus: 'paid' });
     }
 
     res.status(200).json({
@@ -132,9 +113,7 @@ const verifyPayment = async (req, res, next) => {
   }
 };
 
-/**
- * Webhook handler for asynchronous payment gateway events (SACD Section 15)
- */
+// Webhook handler for async Razorpay payment events
 const handleWebhook = async (req, res, next) => {
   try {
     const signature = req.headers['x-razorpay-signature'];
@@ -156,7 +135,6 @@ const handleWebhook = async (req, res, next) => {
         payment.paymentId = p.id;
         payment.invoiceNumber = payment.invoiceNumber || paymentService.generateInvoiceNumber();
         await payment.save();
-
         if (payment.sessionId) {
           await Session.findByIdAndUpdate(payment.sessionId, { paymentStatus: 'paid' });
         }
@@ -177,9 +155,7 @@ const handleWebhook = async (req, res, next) => {
   }
 };
 
-/**
- * Get payment transactions list for therapist dashboard
- */
+// Get all payment transactions for therapist billing dashboard
 const getTherapistPayments = async (req, res, next) => {
   try {
     const therapistId = req.user.id;
@@ -206,9 +182,7 @@ const getTherapistPayments = async (req, res, next) => {
   }
 };
 
-/**
- * Get single invoice details for printing/rendering
- */
+// Get single invoice for printing or client/therapist view
 const getInvoiceDetails = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -221,7 +195,6 @@ const getInvoiceDetails = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Invoice not found' });
     }
 
-    // Authorization check: therapist who owns it or client who paid it
     const userId = req.user.id;
     const isOwnerTherapist = payment.therapistId._id.toString() === userId;
     const isOwnerClient = payment.clientId._id.toString() === userId;
@@ -250,10 +223,4 @@ const getInvoiceDetails = async (req, res, next) => {
   }
 };
 
-module.exports = {
-  createSessionOrder,
-  verifyPayment,
-  handleWebhook,
-  getTherapistPayments,
-  getInvoiceDetails
-};
+module.exports = { createSessionOrder, verifyPayment, handleWebhook, getTherapistPayments, getInvoiceDetails };

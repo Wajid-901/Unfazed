@@ -66,6 +66,15 @@ const clientSchema = new mongoose.Schema(
     digitalSignature: {
       type: String,
       default: null
+    },
+    // Invite token for client self-service password setup
+    inviteToken: {
+      type: String,
+      select: false
+    },
+    inviteTokenExpires: {
+      type: Date,
+      select: false
     }
   },
   {

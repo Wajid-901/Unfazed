@@ -8,7 +8,8 @@ const {
   getClientById,
   createClient,
   updateClient,
-  archiveClient
+  archiveClient,
+  resendInvite
 } = require('../controllers/clientController');
 
 router.use(authenticate, authorize('THERAPIST'));
@@ -18,5 +19,6 @@ router.post('/', requireClientQuota, createClient);
 router.get('/:id', getClientById);
 router.put('/:id', updateClient);
 router.delete('/:id', archiveClient);
+router.post('/:id/resend-invite', resendInvite);
 
 module.exports = router;

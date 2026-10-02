@@ -2,9 +2,7 @@ const Chat = require('../models/Chat');
 const Client = require('../models/Client');
 const Therapist = require('../models/Therapist');
 
-/**
- * Get active conversations list
- */
+// Return conversation list for therapist (all clients) or client (their therapist)
 const getConversations = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -86,9 +84,7 @@ const getConversations = async (req, res, next) => {
   }
 };
 
-/**
- * Get message history for a conversation
- */
+// Return message history for a conversation, mark as read
 const getMessages = async (req, res, next) => {
   try {
     const { conversationId } = req.params;

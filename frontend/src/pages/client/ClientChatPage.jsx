@@ -17,7 +17,7 @@ const ClientChatPage = () => {
   const typingTimeoutRef = useRef(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('unfazed_access_token');
+    const token = localStorage.getItem('unfazed_token');
     const socketUrl = import.meta.env.VITE_API_URL?.startsWith('http')
       ? new URL(import.meta.env.VITE_API_URL).origin
       : 'http://localhost:5000';

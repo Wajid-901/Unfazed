@@ -10,7 +10,8 @@ const {
   getMe,
   forgotPassword,
   resetPassword,
-  verifyEmail
+  verifyEmail,
+  setupClientPassword
 } = require('../controllers/authController');
 const {
   registerValidator,
@@ -18,7 +19,7 @@ const {
 } = require('../validators/authValidators');
 const authenticate = require('../middleware/auth');
 
-// Rate limiter for authentication attempts (SACD Section 18: 5 req/min)
+// 5 req/15s rate limit on auth endpoints
 const authLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 10,
@@ -35,10 +36,11 @@ router.post('/refresh-token', refreshToken);
 router.post('/logout', logout);
 router.get('/me', authenticate, getMe);
 
-// Password Reset & Verification (SaaS Pre-Launch Checklist)
 router.post('/forgot-password', authLimiter, forgotPassword);
 router.post('/reset-password/:token', authLimiter, resetPassword);
 router.get('/verify-email/:token', verifyEmail);
+// Client invite — no auth required, client uses this to set their own password
+router.post('/client/setup-password', authLimiter, setupClientPassword);
 
 module.exports = router;
 

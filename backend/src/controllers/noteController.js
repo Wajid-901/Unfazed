@@ -110,11 +110,7 @@ const deleteNote = async (req, res, next) => {
   }
 };
 
-/**
- * CLIENT PORTAL: Shared Notes ONLY.
- * Strict privacy enforcement: filters exclusively on { clientId: req.user.id, visibility: 'SHARED' }
- * Private therapist clinical notes are NEVER returned to clients.
- */
+// Returns only SHARED notes for the authenticated client — private notes excluded
 const getClientSharedNotes = async (req, res, next) => {
   try {
     const notes = await SessionNote.find({

@@ -2,6 +2,7 @@ const Client = require('../models/Client');
 const Session = require('../models/Session');
 const Payment = require('../models/Payment');
 const SessionNote = require('../models/SessionNote');
+const crypto = require('crypto');
 
 const getClients = async (req, res, next) => {
   try {
@@ -88,6 +89,10 @@ const createClient = async (req, res, next) => {
       });
     }
 
+    // Generate a secure invite token the client uses to set their own password
+    const inviteToken = crypto.randomBytes(32).toString('hex');
+    const inviteTokenHash = crypto.createHash('sha256').update(inviteToken).digest('hex');
+
     const client = await Client.create({
       therapistId: req.user.id,
       name: name.trim(),
@@ -96,14 +101,46 @@ const createClient = async (req, res, next) => {
       tags: tags || ['Active'],
       dateOfBirth,
       gender,
-      intakeData: { presentingConcerns: notes || '' }
+      intakeData: { presentingConcerns: notes || '' },
+      inviteToken: inviteTokenHash,
+      inviteTokenExpires: Date.now() + 24 * 60 * 60 * 1000 // 24 hours
     });
+
+    // Invite link for therapist to share with their client
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const inviteLink = `${frontendUrl}/client/setup-password?token=${inviteToken}`;
 
     res.status(201).json({
       success: true,
-      message: 'Client added successfully',
-      client
+      message: 'Client added successfully. Share the invite link with your client.',
+      client,
+      inviteLink
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Resend invite link for existing client (in case token expired)
+const resendInvite = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const client = await Client.findOne({ _id: id, therapistId: req.user.id });
+    if (!client) {
+      return res.status(404).json({ success: false, message: 'Client not found' });
+    }
+
+    const inviteToken = crypto.randomBytes(32).toString('hex');
+    const inviteTokenHash = crypto.createHash('sha256').update(inviteToken).digest('hex');
+
+    client.inviteToken = inviteTokenHash;
+    client.inviteTokenExpires = Date.now() + 24 * 60 * 60 * 1000;
+    await client.save();
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const inviteLink = `${frontendUrl}/client/setup-password?token=${inviteToken}`;
+
+    res.status(200).json({ success: true, inviteLink });
   } catch (error) {
     next(error);
   }
@@ -166,5 +203,6 @@ module.exports = {
   getClientById,
   createClient,
   updateClient,
-  archiveClient
+  archiveClient,
+  resendInvite
 };

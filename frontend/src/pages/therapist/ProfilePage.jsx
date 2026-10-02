@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../../components/common/Button';
-import { User, Globe, Check, AlertCircle, Sparkles, ExternalLink } from 'lucide-react';
+import { User, Globe, Check, AlertCircle, Sparkles, ExternalLink, Copy, Share2 } from 'lucide-react';
 
 const ProfilePage = () => {
   const { user, updateUser } = useAuth();
@@ -23,6 +23,7 @@ const ProfilePage = () => {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -88,7 +89,20 @@ const ProfilePage = () => {
     return <div className="py-20 text-center text-xs text-slate-400">Loading practice profile...</div>;
   }
 
-  const clinicUrl = `${window.location.origin}/${profile.slug}`;
+  // Production URL uses the custom domain if set, else the current origin
+  const baseUrl = import.meta.env.VITE_PUBLIC_URL || window.location.origin;
+  const clinicUrl = `${baseUrl}/${profile.slug}`;
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(clinicUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      // Fallback for browsers that block clipboard
+      prompt('Copy your clinic link:', clinicUrl);
+    }
+  };
 
   return (
     <div className="max-w-4xl space-y-6">
@@ -100,15 +114,29 @@ const ProfilePage = () => {
           </p>
         </div>
 
-        <a
-          href={clinicUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-700 bg-primary-50 px-3 py-1.5 rounded-lg border border-primary-200 hover:bg-primary-100 transition-colors w-fit"
-        >
-          <ExternalLink className="w-3.5 h-3.5" />
-          Preview Live Clinic
-        </a>
+        <div className="flex flex-wrap items-center gap-2">
+          <a
+            href={clinicUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-700 bg-primary-50 px-3 py-1.5 rounded-lg border border-primary-200 hover:bg-primary-100 transition-colors w-fit"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            Preview Live Clinic
+          </a>
+          <button
+            type="button"
+            onClick={handleCopyLink}
+            className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors w-fit ${
+              copied
+                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+            }`}
+          >
+            {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+            {copied ? 'Link Copied!' : 'Copy Clinic Link'}
+          </button>
+        </div>
       </div>
 
       {message && (
