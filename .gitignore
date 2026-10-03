@@ -37,3 +37,9 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# Build scripts & logs (local machine specific)
+*.bat
+build_result.txt
+commit_result.txt
+build_log*.txt
