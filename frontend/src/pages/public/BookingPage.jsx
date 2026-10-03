@@ -1,15 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../../api/axios';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
 import {
   Calendar as CalendarIcon, Clock, User, Mail, Phone,
-  CheckCircle2, AlertCircle, ChevronLeft, ShieldCheck
+  CheckCircle2, AlertCircle, ChevronLeft, ShieldCheck, LogIn
 } from 'lucide-react';
+
+const loadRazorpayScript = () =>
+  new Promise((resolve) => {
+    if (window.Razorpay) { resolve(true); return; }
+    const s = document.createElement('script');
+    s.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    s.async = true;
+    s.onload = () => resolve(true);
+    s.onerror = () => resolve(false);
+    document.body.appendChild(s);
+  });
 
 const BookingPage = () => {
   const { slug } = useParams();
+  const navigate = useNavigate();
   const [therapist, setTherapist] = useState(null);
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [availableSlots, setAvailableSlots] = useState([]);
@@ -58,31 +70,70 @@ const BookingPage = () => {
     if (!confirmedBooking) return;
     setPayingOnline(true); setPaymentError('');
     try {
-      const { data: orderData } = await api.post('/payments/create-order', { sessionId: confirmedBooking.sessionId });
-      if (!orderData.success) throw new Error('Failed to initiate order.');
-      const isSandboxPlaceholder = orderData.keyId.includes('placeholder');
-      if (!isSandboxPlaceholder && window.Razorpay) {
+      // Check if client is logged in by attempting the order creation.
+      // Public-booking guests are NOT authenticated — the /payments/create-order
+      // endpoint requires a CLIENT JWT. If they get a 401, we redirect them to
+      // login with the sessionId in state so they can pay from their portal.
+      let orderData;
+      try {
+        const { data } = await api.post('/payments/create-order', { sessionId: confirmedBooking.sessionId });
+        if (!data.success) throw new Error(data.message || 'Failed to initiate order.');
+        orderData = data;
+      } catch (orderErr) {
+        const status = orderErr?.response?.status;
+        if (status === 401 || status === 403) {
+          // Not logged in — send them to login, they'll pay from ClientBookingsPage
+          navigate('/login', {
+            state: {
+              redirectTo: '/client/bookings',
+              message: 'Please log in to complete your payment. Your booking is saved — you can pay from the Bookings page.',
+              sessionId: confirmedBooking.sessionId
+            }
+          });
+          return;
+        }
+        throw orderErr;
+      }
+
+      const isSandboxPlaceholder = !orderData.keyId || orderData.keyId.includes('placeholder');
+
+      if (!isSandboxPlaceholder) {
+        // Load Razorpay SDK script before using window.Razorpay
+        const loaded = await loadRazorpayScript();
+        if (!loaded) throw new Error('Razorpay SDK failed to load. Check your internet connection.');
+
         const options = {
           key: orderData.keyId, amount: orderData.amount * 100, currency: orderData.currency,
           name: therapist?.name || 'Unfazed Practice', description: `Therapy Consultation (${confirmedBooking.date})`,
           order_id: orderData.orderId,
           handler: async (response) => {
-            const verifyRes = await api.post('/payments/verify', {
-              orderId: response.razorpay_order_id, paymentId: response.razorpay_payment_id,
-              signature: response.razorpay_signature, paymentRecordId: orderData.paymentRecordId
-            });
-            if (verifyRes.data.success) setPaymentSuccess(verifyRes.data.payment);
+            try {
+              const verifyRes = await api.post('/payments/verify', {
+                orderId: response.razorpay_order_id, paymentId: response.razorpay_payment_id,
+                signature: response.razorpay_signature, paymentRecordId: orderData.paymentRecordId
+              });
+              if (verifyRes.data.success) setPaymentSuccess(verifyRes.data.payment);
+              else throw new Error(verifyRes.data.message || 'Verification failed.');
+            } catch (vErr) {
+              setPaymentError(vErr.response?.data?.message || vErr.message || 'Payment verification failed.');
+            }
           },
           prefill: { name: confirmedBooking.client.name, email: confirmedBooking.client.email },
           theme: { color: '#c4622d' }
         };
-        new window.Razorpay(options).open();
+        const rzp = new window.Razorpay(options);
+        rzp.on('payment.failed', (resp) => {
+          setPaymentError(resp.error?.description || 'Payment failed or was cancelled.');
+        });
+        rzp.open();
       } else {
+        // Sandbox / dev mock — auto-verify
         const { data: verifyRes } = await api.post('/payments/verify', {
           orderId: orderData.orderId, paymentId: `pay_mock_${Date.now()}`,
           signature: `mock_sig_${Date.now()}`, paymentRecordId: orderData.paymentRecordId
         });
         if (verifyRes.success) setPaymentSuccess(verifyRes.payment);
+        else throw new Error(verifyRes.message || 'Mock verification failed.');
       }
     } catch (err) {
       setPaymentError(err.response?.data?.message || err.message || 'Payment initiation failed.');
@@ -137,11 +188,14 @@ const BookingPage = () => {
       </div>
       {!paymentSuccess && (
         <div className="bg-brand-50 p-5 rounded-2xl border border-brand-100 text-center space-y-3">
-          <p className="text-xs text-[#6B6860] font-medium">Would you like to complete payment online now via Razorpay?</p>
+          <p className="text-xs text-[#6B6860] font-medium">Complete your payment online via Razorpay (UPI, Cards, NetBanking)</p>
           <Button type="button" variant="primary" loading={payingOnline} onClick={handlePayNow} className="w-full sm:w-auto px-8">
             Pay ₹{confirmedBooking.amount} Online Now
           </Button>
-          <p className="text-[11px] text-[#9C9890]">Or pay directly to the therapist at the time of consultation.</p>
+          <p className="text-[11px] text-[#9C9890]">
+            You'll be asked to log in first — then pay securely from your Client Portal.
+            <br />Or pay directly to the therapist at the time of consultation.
+          </p>
         </div>
       )}
       <div className="pt-2">

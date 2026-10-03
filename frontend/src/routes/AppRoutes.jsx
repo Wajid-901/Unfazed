@@ -38,6 +38,7 @@ import ClientPaymentsPage from '../pages/client/ClientPaymentsPage';
 import ClientNotesPage from '../pages/client/ClientNotesPage';
 import ClientProfilePage from '../pages/client/ClientProfilePage';
 import ClientChatPage from '../pages/client/ClientChatPage';
+import ClientInvoicePage from '../pages/client/ClientInvoicePage';
 
 // Route Guards
 const TherapistGuard = ({ children }) => {
@@ -104,6 +105,7 @@ const AppRoutes = () => {
         <Route index element={<ClientDashboardPage />} />
         <Route path="bookings" element={<ClientBookingsPage />} />
         <Route path="payments" element={<ClientPaymentsPage />} />
+        <Route path="invoice/:id" element={<ClientInvoicePage />} />
         <Route path="notes" element={<ClientNotesPage />} />
         <Route path="profile" element={<ClientProfilePage />} />
         <Route path="chat" element={<ClientChatPage />} />

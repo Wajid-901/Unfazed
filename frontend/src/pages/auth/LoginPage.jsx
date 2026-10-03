@@ -1,15 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../api/axios';
 import Button from '../../components/common/Button';
-import { User, Lock, Stethoscope, HeartHandshake, AlertCircle, CheckCircle, Mail } from 'lucide-react';
+import { User, Lock, Stethoscope, HeartHandshake, AlertCircle, CheckCircle, Mail, Info } from 'lucide-react';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const { login } = useAuth();
-  const [isClient, setIsClient] = useState(false);
+
+  // If redirected from booking page (guest tried to pay), default to client tab
+  const redirectTo = location.state?.redirectTo;
+  const redirectMessage = location.state?.message;
+
+  const [isClient, setIsClient] = useState(redirectTo?.startsWith('/client') ? true : false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
@@ -78,7 +84,7 @@ const LoginPage = () => {
       if (data?.user?.role === 'THERAPIST') {
         navigate('/dashboard');
       } else {
-        navigate('/client');
+        navigate(redirectTo || '/client');
       }
     } catch (err) {
       console.error(err);
@@ -149,6 +155,14 @@ const LoginPage = () => {
 
       <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-6 shadow-sm border border-[#E8E4DC] sm:rounded-2xl sm:px-10">
+          {/* Redirect message from booking page */}
+          {redirectMessage && (
+            <div className="mb-5 rounded-lg bg-brand-50 border border-brand-200 p-3.5 flex items-start gap-2.5 text-xs text-brand-800">
+              <Info className="w-4 h-4 text-brand-500 flex-shrink-0 mt-0.5" />
+              <span>{redirectMessage}</span>
+            </div>
+          )}
+
           {success && (
             <div className="mb-5 rounded-lg bg-emerald-50 border border-emerald-200 p-3.5 flex items-start gap-2.5 text-xs text-emerald-800">
               <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
