@@ -51,7 +51,7 @@ const FeedbackModal = ({ isOpen, onClose, defaultType = 'support' }) => {
         });
       }, 2000);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to submit message. Please email support@unfazed.in directly.');
+      setError(err.response?.data?.message || 'Failed to submit message. Please email abdulwajid845433@gmail.com directly.');
     } finally {
       setSubmitting(false);
     }
@@ -106,7 +106,7 @@ const FeedbackModal = ({ isOpen, onClose, defaultType = 'support' }) => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-      <label className="block font-semibold text-[#1C1C1A] mb-1">Your Name</label>
+       <label className="block font-semibold text-[#1C1C1A] mb-1">Your Name</label>
               <input
                 type="text"
                 required
@@ -199,13 +199,13 @@ const FeedbackModal = ({ isOpen, onClose, defaultType = 'support' }) => {
                 value={formData.stepsToReproduce}
                 onChange={(e) => setFormData({ ...formData, stepsToReproduce: e.target.value })}
                 placeholder="1. Go to Calendar&#10;2. Click Add Slot&#10;3. Click Save"
-              className="w-full border border-[#E8E4DC] rounded-lg p-2 focus:ring-2 focus:ring-brand-400 outline-none font-mono text-[11px]"
+               className="w-full border border-[#E8E4DC] rounded-lg p-2 focus:ring-2 focus:ring-brand-400 outline-none font-mono text-[11px]"
               />
             </div>
           )}
 
           <div className="flex items-center justify-between pt-3 border-t border-[#E8E4DC]">
-            <span className="text-[11px] text-slate-400">Direct email: support@unfazed.in</span>
+            <span className="text-[11px] text-slate-400">Direct email: abdulwajid845433@gmail.com</span>
             <div className="flex gap-2">
               <Button type="button" variant="secondary" onClick={onClose} disabled={submitting}>
                 Cancel
