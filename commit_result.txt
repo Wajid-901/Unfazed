@@ -1,0 +1,8 @@
+[main 3147c68] feat(client-portal): add dashboard, bookings, payments, notes, and profile pages
+ 7 files changed, 871 insertions(+), 2 deletions(-)
+ create mode 100644 .agents/tasks/client-portal/features/FEAT-003.json
+ create mode 100644 frontend/src/pages/client/ClientBookingsPage.jsx
+ create mode 100644 frontend/src/pages/client/ClientDashboardPage.jsx
+ create mode 100644 frontend/src/pages/client/ClientNotesPage.jsx
+ create mode 100644 frontend/src/pages/client/ClientPaymentsPage.jsx
+ create mode 100644 frontend/src/pages/client/ClientProfilePage.jsx

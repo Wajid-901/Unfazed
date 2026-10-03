@@ -101,11 +101,11 @@ const CalendarPage = () => {
     <div className="space-y-6">
       {/* Top Header & Switcher */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
-        <div className="flex rounded-xl bg-slate-200/80 p-1 border border-slate-300/40">
+        <div className="flex rounded-xl bg-[#E8E4DC] p-1 border border-[#E8E4DC]">
           <button
             onClick={() => setActiveTab('bookings')}
             className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
-              activeTab === 'bookings' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+              activeTab === 'bookings' ? 'bg-white text-[#1C1C1A] shadow-sm' : 'text-[#6B6860] hover:text-[#1C1C1A]'
             }`}
           >
             Scheduled Appointments ({sessions.length})
@@ -113,7 +113,7 @@ const CalendarPage = () => {
           <button
             onClick={() => setActiveTab('availability')}
             className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
-              activeTab === 'availability' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+              activeTab === 'availability' ? 'bg-white text-[#1C1C1A] shadow-sm' : 'text-[#6B6860] hover:text-[#1C1C1A]'
             }`}
           >
             Weekly Working Hours & Slots
@@ -142,9 +142,9 @@ const CalendarPage = () => {
               {sessions.map((sess) => (
                 <div key={sess._id} className="p-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/50 transition-colors">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-primary-50 text-primary-700 flex flex-col items-center justify-center font-bold">
+                    <div className="w-12 h-12 rounded-xl bg-brand-50 text-brand-600 flex flex-col items-center justify-center font-bold">
                       <span className="text-xs">{sess.date.split('-').slice(1).join('/')}</span>
-                      <span className="text-[11px] text-primary-500 font-normal">{sess.startTime}</span>
+                      <span className="text-[11px] text-brand-400 font-normal">{sess.startTime}</span>
                     </div>
                     <div>
                       <h4 className="text-sm font-semibold text-slate-900">{sess.clientId?.name || 'Client'}</h4>
@@ -211,7 +211,7 @@ const CalendarPage = () => {
                       type="checkbox"
                       checked={daySchedule.isActive}
                       onChange={() => handleDayToggle(dayIdx)}
-                      className="w-4 h-4 rounded text-primary-600 focus:ring-primary-500"
+                      className="w-4 h-4 rounded text-brand-500 focus:ring-brand-400"
                     />
                     <span className="text-xs font-bold text-slate-800 w-24">{DAYS[dayIdx]}</span>
                   </label>
@@ -222,14 +222,14 @@ const CalendarPage = () => {
                         type="time"
                         value={slot.start}
                         onChange={(e) => handleSlotTimeChange(dayIdx, 'start', e.target.value)}
-                        className="px-2 py-1 border border-slate-300 rounded-md text-slate-700"
+                        className="px-2 py-1 border border-[#E8E4DC] rounded-md text-[#1C1C1A] bg-[#FAF8F4]"
                       />
                       <span className="text-slate-400">to</span>
                       <input
                         type="time"
                         value={slot.end}
                         onChange={(e) => handleSlotTimeChange(dayIdx, 'end', e.target.value)}
-                        className="px-2 py-1 border border-slate-300 rounded-md text-slate-700"
+                        className="px-2 py-1 border border-[#E8E4DC] rounded-md text-[#1C1C1A] bg-[#FAF8F4]"
                       />
                     </div>
                   ) : (
@@ -252,12 +252,12 @@ const CalendarPage = () => {
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Schedule Session for Client">
         <form onSubmit={handleCreateSession} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">Select Client</label>
+            <label className="block text-xs font-semibold text-[#1C1C1A] mb-1">Select Client</label>
             <select
               required
               value={newSession.clientId}
               onChange={(e) => setNewSession({ ...newSession, clientId: e.target.value })}
-              className="w-full text-sm border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-primary-500 outline-none"
+              className="w-full text-sm border border-[#E8E4DC] rounded-lg p-2 focus:ring-2 focus:ring-brand-400 outline-none bg-[#FAF8F4]"
             >
               <option value="">-- Choose a client --</option>
               {clients.map((c) => (
@@ -270,13 +270,13 @@ const CalendarPage = () => {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Date</label>
+              <label className="block text-xs font-semibold text-[#1C1C1A] mb-1">Date</label>
               <input
                 type="date"
                 required
                 value={newSession.date}
                 onChange={(e) => setNewSession({ ...newSession, date: e.target.value })}
-                className="w-full text-sm border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-primary-500 outline-none"
+                className="w-full text-sm border border-[#E8E4DC] rounded-lg p-2 focus:ring-2 focus:ring-brand-400 outline-none bg-[#FAF8F4]"
               />
             </div>
 
@@ -287,7 +287,7 @@ const CalendarPage = () => {
                 required
                 value={newSession.startTime}
                 onChange={(e) => setNewSession({ ...newSession, startTime: e.target.value })}
-                className="w-full text-sm border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-primary-500 outline-none"
+                className="w-full text-sm border border-[#E8E4DC] rounded-lg p-2 focus:ring-2 focus:ring-brand-400 outline-none bg-[#FAF8F4]"
               />
             </div>
           </div>
@@ -299,7 +299,7 @@ const CalendarPage = () => {
                 type="number"
                 value={newSession.duration}
                 onChange={(e) => setNewSession({ ...newSession, duration: e.target.value })}
-                className="w-full text-sm border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-primary-500 outline-none"
+                className="w-full text-sm border border-[#E8E4DC] rounded-lg p-2 focus:ring-2 focus:ring-brand-400 outline-none bg-[#FAF8F4]"
               />
             </div>
             <div>
@@ -308,7 +308,7 @@ const CalendarPage = () => {
                 type="number"
                 value={newSession.amount}
                 onChange={(e) => setNewSession({ ...newSession, amount: e.target.value })}
-                className="w-full text-sm border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-primary-500 outline-none"
+                className="w-full text-sm border border-[#E8E4DC] rounded-lg p-2 focus:ring-2 focus:ring-brand-400 outline-none bg-[#FAF8F4]"
               />
             </div>
           </div>

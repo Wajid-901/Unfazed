@@ -46,7 +46,6 @@ const ChatPage = () => {
 
     socket.on('receive_message', (msg) => {
       setMessages((prev) => {
-        // Prevent duplicate appending
         if (prev.some((m) => m._id === msg._id)) return prev;
         return [...prev, msg];
       });
@@ -102,12 +101,10 @@ const ChatPage = () => {
           setMessages(data.messages || []);
         }
 
-        // Join socket room
         socketRef.current?.emit('join_conversation', {
           conversationId: activeConv.conversationId
         });
 
-        // Mark as read
         socketRef.current?.emit('mark_read', {
           conversationId: activeConv.conversationId
         });
@@ -139,12 +136,10 @@ const ChatPage = () => {
     const text = newMessage.trim();
     setNewMessage('');
 
-    // Emit typing stop
     socketRef.current?.emit('typing_stop', {
       conversationId: activeConv.conversationId
     });
 
-    // Send via socket
     socketRef.current?.emit(
       'send_message',
       {
@@ -181,26 +176,26 @@ const ChatPage = () => {
   );
 
   return (
-    <div className="h-[calc(100vh-8rem)] bg-white rounded-2xl border border-slate-200 shadow-xs flex overflow-hidden">
+    <div className="h-[calc(100vh-8rem)] bg-white rounded-2xl border border-[#E8E4DC] shadow-xs flex overflow-hidden">
       {/* Left Pane: Conversation List */}
-      <div className="w-80 border-r border-slate-200 flex flex-col bg-slate-50/50">
-        <div className="p-4 border-b border-slate-200 bg-white">
-          <h2 className="font-bold text-sm text-slate-900">Direct Client Messages</h2>
+      <div className="w-80 border-r border-[#E8E4DC] flex flex-col bg-[#FAF8F4]">
+        <div className="p-4 border-b border-[#E8E4DC] bg-white">
+          <h2 className="font-bold text-sm text-[#1C1C1A]">Direct Client Messages</h2>
           <div className="mt-2.5 relative">
             <input
               type="text"
               placeholder="Search clients..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full text-xs pl-8 pr-3 py-1.5 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-primary-500 bg-slate-50"
+              className="w-full text-xs pl-8 pr-3 py-1.5 border border-[#E8E4DC] rounded-lg outline-none focus:ring-2 focus:ring-brand-400 bg-[#FAF8F4]"
             />
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2" />
+            <Search className="w-3.5 h-3.5 text-[#6B6860] absolute left-2.5 top-2" />
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
+        <div className="flex-1 overflow-y-auto divide-y divide-[#E8E4DC]">
           {loading ? (
-            <div className="py-12 text-center text-xs text-slate-400">Loading chats...</div>
+            <div className="py-12 text-center text-xs text-[#6B6860]">Loading chats...</div>
           ) : filteredConversations.length > 0 ? (
             filteredConversations.map((conv) => {
               const isSelected = activeConv?.conversationId === conv.conversationId;
@@ -210,24 +205,26 @@ const ChatPage = () => {
                   type="button"
                   onClick={() => setActiveConv(conv)}
                   className={`w-full text-left p-3.5 transition-colors flex items-center gap-3 ${
-                    isSelected ? 'bg-primary-50/80 border-l-4 border-primary-600' : 'hover:bg-slate-100/60'
+                    isSelected
+                      ? 'bg-brand-50 border-l-4 border-brand-600'
+                      : 'hover:bg-[#F0EDE6]'
                   }`}
                 >
-                  <div className="w-9 h-9 rounded-full bg-primary-100 text-primary-700 font-bold text-xs flex items-center justify-center flex-shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-brand-100 text-brand-700 font-bold text-xs flex items-center justify-center flex-shrink-0">
                     {conv.participant.name.charAt(0)}
                   </div>
                   <div className="flex-1 truncate">
                     <div className="flex items-center justify-between">
-                      <span className="font-semibold text-xs text-slate-900 truncate">
+                      <span className="font-semibold text-xs text-[#1C1C1A] truncate">
                         {conv.participant.name}
                       </span>
                       {conv.unreadCount > 0 && (
-                        <span className="w-4 h-4 rounded-full bg-primary-600 text-white text-[10px] font-bold flex items-center justify-center">
+                        <span className="w-4 h-4 rounded-full bg-accent-500 text-white text-[10px] font-bold flex items-center justify-center">
                           {conv.unreadCount}
                         </span>
                       )}
                     </div>
-                    <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                    <p className="text-[11px] text-[#6B6860] truncate mt-0.5">
                       {conv.lastMessage}
                     </p>
                   </div>
@@ -235,7 +232,7 @@ const ChatPage = () => {
               );
             })
           ) : (
-            <div className="py-12 text-center text-xs text-slate-400 px-4">
+            <div className="py-12 text-center text-xs text-[#6B6860] px-4">
               No clients found in your directory.
             </div>
           )}
@@ -246,14 +243,14 @@ const ChatPage = () => {
       {activeConv ? (
         <div className="flex-1 flex flex-col bg-white">
           {/* Chat Header */}
-          <div className="h-16 px-6 border-b border-slate-200 flex items-center justify-between bg-white z-10">
+          <div className="h-16 px-6 border-b border-[#E8E4DC] flex items-center justify-between bg-white z-10">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-primary-600 to-primary-700 text-white font-bold text-xs flex items-center justify-center">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-600 to-brand-700 text-white font-bold text-xs flex items-center justify-center">
                 {activeConv.participant.name.charAt(0)}
               </div>
               <div>
-                <h3 className="font-bold text-sm text-slate-900">{activeConv.participant.name}</h3>
-                <span className="text-[11px] text-slate-400">{activeConv.participant.email}</span>
+                <h3 className="font-bold text-sm text-[#1C1C1A]">{activeConv.participant.name}</h3>
+                <span className="text-[11px] text-[#6B6860]">{activeConv.participant.email}</span>
               </div>
             </div>
 
@@ -264,9 +261,9 @@ const ChatPage = () => {
           </div>
 
           {/* Message Stream */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-[#F8FAFC]">
+          <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-[#FAF8F4]">
             {loadingMessages ? (
-              <div className="py-12 text-center text-xs text-slate-400">Loading messages...</div>
+              <div className="py-12 text-center text-xs text-[#6B6860]">Loading messages...</div>
             ) : messages.length > 0 ? (
               messages.map((m) => {
                 const isMe = m.senderId === user?.id;
@@ -278,20 +275,20 @@ const ChatPage = () => {
                     <div
                       className={`max-w-md p-3.5 rounded-2xl text-xs leading-relaxed shadow-2xs ${
                         isMe
-                          ? 'bg-primary-600 text-white rounded-br-xs'
-                          : 'bg-white text-slate-800 border border-slate-200 rounded-bl-xs'
+                          ? 'bg-accent-500 text-white rounded-br-xs'
+                          : 'bg-white text-[#1C1C1A] border border-[#E8E4DC] rounded-bl-xs'
                       }`}
                     >
                       {m.message}
                     </div>
-                    <div className="flex items-center gap-1 text-[10px] text-slate-400 mt-1 px-1">
+                    <div className="flex items-center gap-1 text-[10px] text-[#6B6860] mt-1 px-1">
                       <span>{new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                       {isMe && (
                         <span>
                           {m.status === 'read' ? (
                             <CheckCheck className="w-3 h-3 text-emerald-500" />
                           ) : (
-                            <Check className="w-3 h-3 text-slate-400" />
+                            <Check className="w-3 h-3 text-[#6B6860]" />
                           )}
                         </span>
                       )}
@@ -300,18 +297,18 @@ const ChatPage = () => {
                 );
               })
             ) : (
-              <div className="py-16 text-center text-xs text-slate-400 space-y-1">
-                <MessageSquare className="w-8 h-8 text-slate-300 mx-auto" />
-                <p className="font-semibold text-slate-600">Start the conversation</p>
-                <p className="text-[11px] text-slate-400">
+              <div className="py-16 text-center text-xs text-[#6B6860] space-y-1">
+                <MessageSquare className="w-8 h-8 text-[#C8C4BC] mx-auto" />
+                <p className="font-semibold text-[#1C1C1A]">Start the conversation</p>
+                <p className="text-[11px] text-[#6B6860]">
                   Send appointment reminders, care plan links, or check in with {activeConv.participant.name}.
                 </p>
               </div>
             )}
 
             {isTyping && (
-              <div className="flex items-center gap-1.5 text-slate-400 text-xs italic">
-                <div className="w-2 h-2 rounded-full bg-slate-400 animate-pulse" />
+              <div className="flex items-center gap-1.5 text-[#6B6860] text-xs italic">
+                <div className="w-2 h-2 rounded-full bg-[#6B6860] animate-pulse" />
                 <span>{activeConv.participant.name} is typing...</span>
               </div>
             )}
@@ -320,27 +317,27 @@ const ChatPage = () => {
           </div>
 
           {/* Message Input Box */}
-          <form onSubmit={handleSendMessage} className="p-4 border-t border-slate-200 bg-white flex items-center gap-2">
+          <form onSubmit={handleSendMessage} className="p-4 border-t border-[#E8E4DC] bg-white flex items-center gap-2">
             <input
               type="text"
               placeholder={`Write a confidential message to ${activeConv.participant.name}...`}
               value={newMessage}
               onChange={handleTyping}
-              className="flex-1 text-xs border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary-500 bg-slate-50"
+              className="flex-1 text-xs border border-[#E8E4DC] rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-brand-400 bg-[#FAF8F4]"
             />
             <button
               type="submit"
               disabled={!newMessage.trim()}
-              className="p-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white transition-colors flex-shrink-0 shadow-xs"
+              className="p-2.5 rounded-xl bg-accent-500 hover:bg-accent-600 disabled:opacity-50 text-white transition-colors flex-shrink-0 shadow-xs"
             >
               <Send className="w-4 h-4" />
             </button>
           </form>
         </div>
       ) : (
-        <div className="flex-1 flex flex-col items-center justify-center text-xs text-slate-400">
-          <MessageSquare className="w-10 h-10 text-slate-300 mb-2" />
-          <p className="font-semibold text-slate-600">Select a conversation to start chatting</p>
+        <div className="flex-1 flex flex-col items-center justify-center text-xs text-[#6B6860]">
+          <MessageSquare className="w-10 h-10 text-[#C8C4BC] mb-2" />
+          <p className="font-semibold text-[#1C1C1A]">Select a conversation to start chatting</p>
         </div>
       )}
     </div>

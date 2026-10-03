@@ -92,7 +92,7 @@ const ClientProfilePage = () => {
 
   if (loading) {
     return (
-      <div className="py-20 text-center text-xs text-slate-400">
+      <div className="py-20 text-center text-xs text-[#6B6860]">
         Loading your profile...
       </div>
     );
@@ -101,12 +101,12 @@ const ClientProfilePage = () => {
   return (
     <div className="space-y-6 max-w-2xl">
       {/* Header */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 sm:p-8">
-        <span className="text-xs font-semibold text-teal-600 uppercase tracking-wider block mb-1">
+      <div className="bg-white rounded-2xl border border-[#E8E4DC] shadow-xs p-6 sm:p-8">
+        <span className="text-xs font-semibold text-brand-600 uppercase tracking-wider block mb-1">
           Profile
         </span>
-        <h1 className="text-2xl font-bold text-slate-900">Your Profile</h1>
-        <p className="text-xs text-slate-500 mt-1">
+        <h1 className="text-2xl font-bold text-[#1C1C1A]">Your Profile</h1>
+        <p className="text-xs text-[#6B6860] mt-1">
           Manage your personal details and emergency contact information.
         </p>
       </div>
@@ -127,16 +127,16 @@ const ClientProfilePage = () => {
       )}
 
       {/* Profile Form */}
-      <form onSubmit={handleSave} className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-6">
+      <form onSubmit={handleSave} className="bg-white rounded-2xl border border-[#E8E4DC] shadow-xs p-6 space-y-6">
         {/* Personal Info */}
         <div>
-          <h2 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
-            <User className="w-4 h-4 text-teal-600" />
+          <h2 className="text-sm font-bold text-[#1C1C1A] mb-4 flex items-center gap-2">
+            <User className="w-4 h-4 text-brand-600" />
             Personal Information
           </h2>
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              <label className="block text-xs font-semibold text-[#1C1C1A] mb-1.5">
                 Full Name
               </label>
               <input
@@ -145,22 +145,22 @@ const ClientProfilePage = () => {
                 value={form.name}
                 onChange={handleChange}
                 placeholder="Your full name"
-                className="w-full text-sm border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-teal-500 bg-slate-50 placeholder:text-slate-400"
+                className="w-full text-sm border border-[#E8E4DC] rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-brand-400 bg-[#FAF8F4] placeholder:text-[#6B6860]"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              <label className="block text-xs font-semibold text-[#1C1C1A] mb-1.5">
                 Phone Number
               </label>
               <div className="relative">
-                <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Phone className="w-4 h-4 text-[#6B6860] absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   name="phone"
                   value={form.phone}
                   onChange={handleChange}
                   placeholder="+91 XXXXX XXXXX"
-                  className="w-full text-sm border border-slate-300 rounded-xl pl-9 pr-4 py-2.5 outline-none focus:ring-2 focus:ring-teal-500 bg-slate-50 placeholder:text-slate-400"
+                  className="w-full text-sm border border-[#E8E4DC] rounded-xl pl-9 pr-4 py-2.5 outline-none focus:ring-2 focus:ring-brand-400 bg-[#FAF8F4] placeholder:text-[#6B6860]"
                 />
               </div>
             </div>
@@ -169,13 +169,13 @@ const ClientProfilePage = () => {
 
         {/* Emergency Contact */}
         <div>
-          <h2 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
-            <UserCircle className="w-4 h-4 text-teal-600" />
+          <h2 className="text-sm font-bold text-[#1C1C1A] mb-4 flex items-center gap-2">
+            <UserCircle className="w-4 h-4 text-brand-600" />
             Emergency Contact
           </h2>
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              <label className="block text-xs font-semibold text-[#1C1C1A] mb-1.5">
                 Contact Name
               </label>
               <input
@@ -184,27 +184,27 @@ const ClientProfilePage = () => {
                 value={form.emergencyContactName}
                 onChange={handleChange}
                 placeholder="Emergency contact's full name"
-                className="w-full text-sm border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-teal-500 bg-slate-50 placeholder:text-slate-400"
+                className="w-full text-sm border border-[#E8E4DC] rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-brand-400 bg-[#FAF8F4] placeholder:text-[#6B6860]"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              <label className="block text-xs font-semibold text-[#1C1C1A] mb-1.5">
                 Contact Phone
               </label>
               <div className="relative">
-                <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Phone className="w-4 h-4 text-[#6B6860] absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   name="emergencyContactPhone"
                   value={form.emergencyContactPhone}
                   onChange={handleChange}
                   placeholder="+91 XXXXX XXXXX"
-                  className="w-full text-sm border border-slate-300 rounded-xl pl-9 pr-4 py-2.5 outline-none focus:ring-2 focus:ring-teal-500 bg-slate-50 placeholder:text-slate-400"
+                  className="w-full text-sm border border-[#E8E4DC] rounded-xl pl-9 pr-4 py-2.5 outline-none focus:ring-2 focus:ring-brand-400 bg-[#FAF8F4] placeholder:text-[#6B6860]"
                 />
               </div>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              <label className="block text-xs font-semibold text-[#1C1C1A] mb-1.5">
                 Relationship
               </label>
               <input
@@ -213,7 +213,7 @@ const ClientProfilePage = () => {
                 value={form.emergencyContactRelation}
                 onChange={handleChange}
                 placeholder="e.g. Parent, Spouse, Friend"
-                className="w-full text-sm border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-teal-500 bg-slate-50 placeholder:text-slate-400"
+                className="w-full text-sm border border-[#E8E4DC] rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-brand-400 bg-[#FAF8F4] placeholder:text-[#6B6860]"
               />
             </div>
           </div>
@@ -224,7 +224,7 @@ const ClientProfilePage = () => {
           <button
             type="submit"
             disabled={saving}
-            className="inline-flex items-center gap-2 bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-colors"
+            className="inline-flex items-center gap-2 bg-accent-500 hover:bg-accent-600 disabled:opacity-60 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-colors"
           >
             <Save className="w-4 h-4" />
             {saving ? 'Saving...' : 'Save Changes'}
@@ -234,19 +234,19 @@ const ClientProfilePage = () => {
 
       {/* Therapist Info (read-only) */}
       {therapistInfo && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6">
-          <h2 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
-            <UserCircle className="w-4 h-4 text-teal-600" />
+        <div className="bg-white rounded-2xl border border-[#E8E4DC] shadow-xs p-6">
+          <h2 className="text-sm font-bold text-[#1C1C1A] mb-4 flex items-center gap-2">
+            <UserCircle className="w-4 h-4 text-brand-600" />
             Your Therapist
           </h2>
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-teal-600 to-teal-800 text-white font-bold text-lg flex items-center justify-center flex-shrink-0">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-brand-600 to-brand-800 text-white font-bold text-lg flex items-center justify-center flex-shrink-0">
               {therapistInfo.name?.charAt(0).toUpperCase() || 'T'}
             </div>
             <div>
-              <p className="text-sm font-bold text-slate-900">{therapistInfo.name}</p>
+              <p className="text-sm font-bold text-[#1C1C1A]">{therapistInfo.name}</p>
               {therapistInfo.title && (
-                <p className="text-xs text-teal-600 font-semibold">{therapistInfo.title}</p>
+                <p className="text-xs text-brand-600 font-semibold">{therapistInfo.title}</p>
               )}
             </div>
           </div>
@@ -254,11 +254,11 @@ const ClientProfilePage = () => {
       )}
 
       {/* Password Change Note */}
-      <div className="bg-slate-50 rounded-xl border border-slate-200 p-4 flex items-start gap-3">
-        <Shield className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
-        <p className="text-xs text-slate-500">
+      <div className="bg-[#FAF8F4] rounded-xl border border-[#E8E4DC] p-4 flex items-start gap-3">
+        <Shield className="w-4 h-4 text-[#6B6860] mt-0.5 flex-shrink-0" />
+        <p className="text-xs text-[#6B6860]">
           To change your password, use the{' '}
-          <span className="font-semibold text-slate-700">Forgot Password</span> link on the login page.
+          <span className="font-semibold text-[#1C1C1A]">Forgot Password</span> link on the login page.
         </p>
       </div>
     </div>

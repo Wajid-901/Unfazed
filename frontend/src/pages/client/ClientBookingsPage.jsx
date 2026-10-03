@@ -9,7 +9,6 @@ const sessionStatusVariant = (status) => {
   if (status === 'scheduled') return 'warning';
   if (status === 'cancelled') return 'danger';
   if (status === 'no_show') return 'danger';
-  // in_progress maps to default (no 'info' variant in Badge)
   return 'neutral';
 };
 
@@ -31,7 +30,6 @@ const ClientBookingsPage = () => {
       try {
         const { data } = await api.get('/sessions/mine');
         if (data.success) {
-          // Sort newest first
           const sorted = (data.sessions || []).sort(
             (a, b) => new Date(b.date) - new Date(a.date)
           );
@@ -50,24 +48,24 @@ const ClientBookingsPage = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 sm:p-8">
-        <span className="text-xs font-semibold text-teal-600 uppercase tracking-wider block mb-1">
+      <div className="bg-white rounded-2xl border border-[#E8E4DC] shadow-xs p-6 sm:p-8">
+        <span className="text-xs font-semibold text-brand-600 uppercase tracking-wider block mb-1">
           Sessions
         </span>
-        <h1 className="text-2xl font-bold text-slate-900">Your Bookings</h1>
-        <p className="text-xs text-slate-500 mt-1">
+        <h1 className="text-2xl font-bold text-[#1C1C1A]">Your Bookings</h1>
+        <p className="text-xs text-[#6B6860] mt-1">
           All your scheduled and past therapy sessions
         </p>
       </div>
 
       {/* Sessions List */}
       {loading ? (
-        <div className="py-12 text-center text-xs text-slate-400">Loading your sessions...</div>
+        <div className="py-12 text-center text-xs text-[#6B6860]">Loading your sessions...</div>
       ) : sessions.length === 0 ? (
-        <div className="p-12 text-center bg-white rounded-xl border border-slate-200">
-          <Calendar className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-          <p className="text-sm font-medium text-slate-600">No sessions found</p>
-          <p className="text-xs text-slate-400 mt-1">
+        <div className="p-12 text-center bg-white rounded-xl border border-[#E8E4DC]">
+          <Calendar className="w-10 h-10 text-[#C8C4BC] mx-auto mb-3" />
+          <p className="text-sm font-medium text-[#1C1C1A]">No sessions found</p>
+          <p className="text-xs text-[#6B6860] mt-1">
             Your booked sessions will appear here once scheduled.
           </p>
         </div>
@@ -82,26 +80,26 @@ const ClientBookingsPage = () => {
             return (
               <div
                 key={session._id}
-                className="bg-white rounded-xl border border-slate-200 shadow-xs p-5"
+                className="bg-white rounded-xl border border-[#E8E4DC] shadow-xs p-5"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   {/* Left: Date & time */}
                   <div className="space-y-1.5">
-                    <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
-                      <Calendar className="w-4 h-4 text-teal-600 flex-shrink-0" />
+                    <div className="flex items-center gap-2 text-sm font-bold text-[#1C1C1A]">
+                      <Calendar className="w-4 h-4 text-brand-600 flex-shrink-0" />
                       <span>{session.date}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-slate-500">
-                      <Clock className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                    <div className="flex items-center gap-2 text-xs text-[#6B6860]">
+                      <Clock className="w-3.5 h-3.5 text-[#6B6860] flex-shrink-0" />
                       <span>
                         {session.startTime}
                         {session.endTime ? ` – ${session.endTime}` : ''}
                         {session.duration ? ` · ${session.duration} min` : ''}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-500 pl-0.5">
+                    <p className="text-xs text-[#6B6860] pl-0.5">
                       Therapist:{' '}
-                      <span className="font-semibold text-slate-700">{therapistName}</span>
+                      <span className="font-semibold text-[#1C1C1A]">{therapistName}</span>
                     </p>
                   </div>
 
@@ -120,7 +118,7 @@ const ClientBookingsPage = () => {
                         href={session.meetingLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold bg-teal-600 text-white px-3 py-1.5 rounded-lg hover:bg-teal-700 transition-colors"
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold bg-accent-500 text-white px-3 py-1.5 rounded-lg hover:bg-accent-600 transition-colors"
                       >
                         <Video className="w-3.5 h-3.5" />
                         Join Session

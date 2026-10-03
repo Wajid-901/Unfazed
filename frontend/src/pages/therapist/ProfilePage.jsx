@@ -86,10 +86,9 @@ const ProfilePage = () => {
   };
 
   if (loading) {
-    return <div className="py-20 text-center text-xs text-slate-400">Loading practice profile...</div>;
+    return <div className="py-20 text-center text-xs text-[#6B6860]">Loading practice profile...</div>;
   }
 
-  // Production URL uses the custom domain if set, else the current origin
   const baseUrl = import.meta.env.VITE_PUBLIC_URL || window.location.origin;
   const clinicUrl = `${baseUrl}/${profile.slug}`;
 
@@ -99,7 +98,6 @@ const ProfilePage = () => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     } catch {
-      // Fallback for browsers that block clipboard
       prompt('Copy your clinic link:', clinicUrl);
     }
   };
@@ -108,8 +106,8 @@ const ProfilePage = () => {
     <div className="max-w-4xl space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Practice Profile & Clinic Details</h2>
-          <p className="text-xs text-slate-500">
+          <h2 className="text-xl font-bold text-[#1C1C1A] tracking-tight">Practice Profile &amp; Clinic Details</h2>
+          <p className="text-xs text-[#6B6860]">
             This information powers your public booking website and client communications.
           </p>
         </div>
@@ -119,7 +117,7 @@ const ProfilePage = () => {
             href={clinicUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-700 bg-primary-50 px-3 py-1.5 rounded-lg border border-primary-200 hover:bg-primary-100 transition-colors w-fit"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-700 bg-brand-50 px-3 py-1.5 rounded-lg border border-brand-200 hover:bg-brand-100 transition-colors w-fit"
           >
             <ExternalLink className="w-3.5 h-3.5" />
             Preview Live Clinic
@@ -130,7 +128,7 @@ const ProfilePage = () => {
             className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors w-fit ${
               copied
                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                : 'bg-[#FAF8F4] text-[#1C1C1A] border-[#E8E4DC] hover:bg-[#F0EDE6]'
             }`}
           >
             {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
@@ -153,24 +151,24 @@ const ProfilePage = () => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-6">
+      <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-[#E8E4DC] shadow-xs p-6 space-y-6">
         {/* Clinic URL Slug */}
-        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-          <label className="block text-xs font-bold text-slate-800">
+        <div className="p-4 rounded-xl bg-[#FAF8F4] border border-[#E8E4DC] space-y-2">
+          <label className="block text-xs font-bold text-[#1C1C1A]">
             Your Branded Clinic URL (Slug)
           </label>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-400 font-mono hidden sm:inline">https://unfazed.in/</span>
+            <span className="text-xs text-[#6B6860] font-mono hidden sm:inline">https://unfazed.in/</span>
             <input
               type="text"
               name="slug"
               required
               value={profile.slug}
               onChange={handleChange}
-              className="flex-1 text-xs border border-slate-300 rounded-lg p-2 font-mono text-primary-700 font-semibold focus:ring-2 focus:ring-primary-500 outline-none"
+              className="flex-1 text-xs border border-[#E8E4DC] rounded-lg p-2 font-mono text-brand-700 font-semibold focus:ring-2 focus:ring-brand-400 outline-none bg-white"
             />
           </div>
-          <span className="text-[11px] text-slate-500 block">
+          <span className="text-[11px] text-[#6B6860] block">
             Clients visit this link to view your profile and book appointments directly.
           </span>
         </div>
@@ -178,75 +176,75 @@ const ProfilePage = () => {
         {/* Basic Info */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
+            <label className="block text-xs font-semibold text-[#1C1C1A] mb-1">Full Name</label>
             <input
               type="text"
               name="name"
               required
               value={profile.name}
               onChange={handleChange}
-              className="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-primary-500 outline-none"
+              className="w-full text-xs border border-[#E8E4DC] rounded-lg p-2 focus:ring-2 focus:ring-brand-400 outline-none bg-[#FAF8F4]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">Professional Title</label>
+            <label className="block text-xs font-semibold text-[#1C1C1A] mb-1">Professional Title</label>
             <input
               type="text"
               name="title"
               value={profile.title}
               onChange={handleChange}
-              placeholder="e.g. Clinical Psychologist & Psychotherapist"
-              className="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-primary-500 outline-none"
+              placeholder="e.g. Clinical Psychologist &amp; Psychotherapist"
+              className="w-full text-xs border border-[#E8E4DC] rounded-lg p-2 focus:ring-2 focus:ring-brand-400 outline-none bg-[#FAF8F4]"
             />
           </div>
         </div>
 
         {/* Bio */}
         <div>
-          <label className="block text-xs font-semibold text-slate-700 mb-1">About & Clinical Bio</label>
+          <label className="block text-xs font-semibold text-[#1C1C1A] mb-1">About &amp; Clinical Bio</label>
           <textarea
             name="bio"
             rows="4"
             value={profile.bio}
             onChange={handleChange}
             placeholder="Tell clients about your background, therapeutic approach, and what they can expect..."
-            className="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-primary-500 outline-none"
+            className="w-full text-xs border border-[#E8E4DC] rounded-lg p-2 focus:ring-2 focus:ring-brand-400 outline-none bg-[#FAF8F4]"
           />
         </div>
 
         {/* Qualifications & Rate */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">Hourly Fee (₹ INR)</label>
+            <label className="block text-xs font-semibold text-[#1C1C1A] mb-1">Hourly Fee (₹ INR)</label>
             <input
               type="number"
               name="hourlyRate"
               value={profile.hourlyRate}
               onChange={handleChange}
-              className="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-primary-500 outline-none"
+              className="w-full text-xs border border-[#E8E4DC] rounded-lg p-2 focus:ring-2 focus:ring-brand-400 outline-none bg-[#FAF8F4]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">Experience (Years)</label>
+            <label className="block text-xs font-semibold text-[#1C1C1A] mb-1">Experience (Years)</label>
             <input
               type="number"
               name="experienceYears"
               value={profile.experienceYears}
               onChange={handleChange}
-              className="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-primary-500 outline-none"
+              className="w-full text-xs border border-[#E8E4DC] rounded-lg p-2 focus:ring-2 focus:ring-brand-400 outline-none bg-[#FAF8F4]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">Degrees / Qualification</label>
+            <label className="block text-xs font-semibold text-[#1C1C1A] mb-1">Degrees / Qualification</label>
             <input
               type="text"
               name="qualification"
               value={profile.qualification}
               onChange={handleChange}
-              className="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-primary-500 outline-none"
+              className="w-full text-xs border border-[#E8E4DC] rounded-lg p-2 focus:ring-2 focus:ring-brand-400 outline-none bg-[#FAF8F4]"
             />
           </div>
         </div>
@@ -254,31 +252,31 @@ const ProfilePage = () => {
         {/* Languages & Specializations */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">Languages (Comma-separated)</label>
+            <label className="block text-xs font-semibold text-[#1C1C1A] mb-1">Languages (Comma-separated)</label>
             <input
               type="text"
               name="languages"
               value={profile.languages}
               onChange={handleChange}
               placeholder="English, Hindi, Bengali"
-              className="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-primary-500 outline-none"
+              className="w-full text-xs border border-[#E8E4DC] rounded-lg p-2 focus:ring-2 focus:ring-brand-400 outline-none bg-[#FAF8F4]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">Specializations (Comma-separated)</label>
+            <label className="block text-xs font-semibold text-[#1C1C1A] mb-1">Specializations (Comma-separated)</label>
             <input
               type="text"
               name="specializations"
               value={profile.specializations}
               onChange={handleChange}
               placeholder="Anxiety, CBT, Grief Counseling"
-              className="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-primary-500 outline-none"
+              className="w-full text-xs border border-[#E8E4DC] rounded-lg p-2 focus:ring-2 focus:ring-brand-400 outline-none bg-[#FAF8F4]"
             />
           </div>
         </div>
 
-        <div className="pt-4 border-t border-slate-100 flex justify-end">
+        <div className="pt-4 border-t border-[#E8E4DC] flex justify-end">
           <Button type="submit" variant="primary" loading={saving}>
             Save Changes
           </Button>

@@ -26,7 +26,6 @@ const ClientPaymentsPage = () => {
       try {
         const { data } = await api.get('/payments/mine');
         if (data.success) {
-          // Sort newest first by session date or createdAt
           const sorted = (data.payments || []).sort(
             (a, b) =>
               new Date(b.sessionId?.date || b.createdAt) -
@@ -47,24 +46,24 @@ const ClientPaymentsPage = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 sm:p-8">
-        <span className="text-xs font-semibold text-teal-600 uppercase tracking-wider block mb-1">
+      <div className="bg-white rounded-2xl border border-[#E8E4DC] shadow-xs p-6 sm:p-8">
+        <span className="text-xs font-semibold text-brand-600 uppercase tracking-wider block mb-1">
           Payments
         </span>
-        <h1 className="text-2xl font-bold text-slate-900">Payment History</h1>
-        <p className="text-xs text-slate-500 mt-1">
+        <h1 className="text-2xl font-bold text-[#1C1C1A]">Payment History</h1>
+        <p className="text-xs text-[#6B6860] mt-1">
           All invoices and payment records for your sessions
         </p>
       </div>
 
       {/* Payments List */}
       {loading ? (
-        <div className="py-12 text-center text-xs text-slate-400">Loading payment history...</div>
+        <div className="py-12 text-center text-xs text-[#6B6860]">Loading payment history...</div>
       ) : payments.length === 0 ? (
-        <div className="p-12 text-center bg-white rounded-xl border border-slate-200">
-          <CreditCard className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-          <p className="text-sm font-medium text-slate-600">No payment records found</p>
-          <p className="text-xs text-slate-400 mt-1">
+        <div className="p-12 text-center bg-white rounded-xl border border-[#E8E4DC]">
+          <CreditCard className="w-10 h-10 text-[#C8C4BC] mx-auto mb-3" />
+          <p className="text-sm font-medium text-[#1C1C1A]">No payment records found</p>
+          <p className="text-xs text-[#6B6860] mt-1">
             Payments made for your sessions will appear here.
           </p>
         </div>
@@ -73,28 +72,28 @@ const ClientPaymentsPage = () => {
           {payments.map((payment) => (
             <div
               key={payment._id}
-              className="bg-white rounded-xl border border-slate-200 shadow-xs p-5"
+              className="bg-white rounded-xl border border-[#E8E4DC] shadow-xs p-5"
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 {/* Left: Invoice & session info */}
                 <div className="space-y-1.5">
-                  <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
-                    <Receipt className="w-4 h-4 text-teal-600 flex-shrink-0" />
+                  <div className="flex items-center gap-2 text-sm font-bold text-[#1C1C1A]">
+                    <Receipt className="w-4 h-4 text-brand-600 flex-shrink-0" />
                     <span>
                       {payment.invoiceNumber || 'Pending'}
                     </span>
                   </div>
                   {payment.sessionId?.date && (
-                    <p className="text-xs text-slate-500 pl-0.5">
+                    <p className="text-xs text-[#6B6860] pl-0.5">
                       Session date:{' '}
-                      <span className="font-semibold text-slate-700">
+                      <span className="font-semibold text-[#1C1C1A]">
                         {payment.sessionId.date}
                       </span>
                     </p>
                   )}
-                  <p className="text-xs text-slate-500 pl-0.5">
+                  <p className="text-xs text-[#6B6860] pl-0.5">
                     Amount:{' '}
-                    <span className="font-bold text-slate-800 text-sm">
+                    <span className="font-bold text-[#1C1C1A] text-sm">
                       {formatCurrency(payment.amount)}
                     </span>
                   </p>
@@ -110,7 +109,7 @@ const ClientPaymentsPage = () => {
                       href={`/client/invoice/${payment._id}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold border border-teal-600 text-teal-600 px-3 py-1.5 rounded-lg hover:bg-teal-50 transition-colors"
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold border border-brand-600 text-brand-600 px-3 py-1.5 rounded-lg hover:bg-brand-50 transition-colors"
                     >
                       <CreditCard className="w-3.5 h-3.5" />
                       View Invoice

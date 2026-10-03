@@ -28,12 +28,12 @@ const SidebarContent = ({ user, logout, onClose }) => {
       {/* Logo / portal title */}
       <div className="h-16 flex items-center px-6 border-b border-slate-100 justify-between flex-shrink-0">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-lg bg-teal-600 text-white flex items-center justify-center shadow-sm">
+          <div className="w-9 h-9 rounded-lg bg-accent-500 text-white flex items-center justify-center shadow-sm">
             <HeartHandshake className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-xl font-bold tracking-tight text-slate-900">Unfazed</span>
-            <span className="block text-[10px] uppercase font-semibold text-teal-600 tracking-wider">Client Portal</span>
+            <span className="text-xl font-bold tracking-tight text-[#1C1C1A]">Unfazed</span>
+            <span className="block text-[10px] uppercase font-semibold text-accent-500 tracking-wider">Client Portal</span>
           </div>
         </div>
 
@@ -61,8 +61,8 @@ const SidebarContent = ({ user, logout, onClose }) => {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-teal-50 text-teal-700 font-semibold'
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                    ? 'bg-brand-50 text-brand-500 font-semibold border-l-2 border-accent-500'
+                    : 'text-[#6B6860] hover:bg-brand-50 hover:text-[#1C1C1A]'
                 }`
               }
             >
@@ -78,7 +78,7 @@ const SidebarContent = ({ user, logout, onClose }) => {
         <div className="flex items-center justify-between px-2 py-1">
           <div className="flex items-center gap-2 min-w-0">
             {/* Avatar: first letter */}
-            <div className="w-8 h-8 rounded-full bg-teal-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
+            <div className="w-8 h-8 rounded-full bg-accent-500 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
               {user?.name ? user.name.charAt(0).toUpperCase() : 'C'}
             </div>
             <div className="truncate">
@@ -104,7 +104,7 @@ const ClientLayout = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-cream">
       {/* ── Desktop sidebar ─────────────────────────────────── */}
       <aside className="hidden lg:flex w-64 bg-white border-r border-slate-200 flex-col h-screen fixed left-0 top-0 z-30">
         <SidebarContent user={user} logout={logout} />
@@ -144,7 +144,7 @@ const ClientLayout = () => {
             <Menu className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-teal-600 text-white flex items-center justify-center">
+            <div className="w-7 h-7 rounded-lg bg-accent-500 text-white flex items-center justify-center">
               <HeartHandshake className="w-4 h-4" />
             </div>
             <span className="font-bold text-slate-900 text-sm">Client Portal</span>

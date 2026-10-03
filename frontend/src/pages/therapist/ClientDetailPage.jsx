@@ -46,7 +46,7 @@ const ClientDetailPage = () => {
     return (
       <div className="py-20 text-center">
         <p className="text-sm font-semibold text-slate-700">Client record not found</p>
-        <Link to="/dashboard/clients" className="mt-2 text-xs text-primary-600 underline">
+        <Link to="/dashboard/clients" className="mt-2 text-xs text-brand-500 underline">
           Return to clients
         </Link>
       </div>
@@ -70,7 +70,7 @@ const ClientDetailPage = () => {
       {/* Header Profile Card */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-primary-100 text-primary-700 font-bold text-xl flex items-center justify-center">
+          <div className="w-14 h-14 rounded-2xl bg-brand-100 text-brand-600 font-bold text-xl flex items-center justify-center">
             {client.name.charAt(0)}
           </div>
           <div>
@@ -103,11 +103,11 @@ const ClientDetailPage = () => {
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex rounded-xl bg-slate-200/80 p-1 border border-slate-300/40 w-fit">
+      <div className="flex rounded-xl bg-[#E8E4DC] p-1 border border-[#E8E4DC] w-fit">
         <button
           onClick={() => setActiveTab('sessions')}
           className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
-            activeTab === 'sessions' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+            activeTab === 'sessions' ? 'bg-white text-[#1C1C1A] shadow-sm' : 'text-[#6B6860] hover:text-[#1C1C1A]'
           }`}
         >
           Session History ({sessions.length})
@@ -115,7 +115,7 @@ const ClientDetailPage = () => {
         <button
           onClick={() => setActiveTab('notes')}
           className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
-            activeTab === 'notes' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+            activeTab === 'notes' ? 'bg-white text-[#1C1C1A] shadow-sm' : 'text-[#6B6860] hover:text-[#1C1C1A]'
           }`}
         >
           Clinical Notes ({notes.length})
@@ -123,7 +123,7 @@ const ClientDetailPage = () => {
         <button
           onClick={() => setActiveTab('intake')}
           className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
-            activeTab === 'intake' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+            activeTab === 'intake' ? 'bg-white text-[#1C1C1A] shadow-sm' : 'text-[#6B6860] hover:text-[#1C1C1A]'
           }`}
         >
           Intake & Consent Form
@@ -161,7 +161,7 @@ const ClientDetailPage = () => {
         <div className="bg-white rounded-xl border border-slate-200 shadow-xs divide-y divide-slate-100 overflow-hidden">
           <div className="p-4 bg-slate-50/50 flex items-center justify-between font-bold text-xs text-slate-700">
             <span>Clinical Records</span>
-            <Link to="/dashboard/notes" className="text-primary-600 hover:underline">
+            <Link to="/dashboard/notes" className="text-brand-500 hover:underline">
               Create Note →
             </Link>
           </div>

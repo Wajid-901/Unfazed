@@ -51,7 +51,7 @@ const SubscriptionPage = () => {
   };
 
   if (loading) {
-    return <div className="py-20 text-center text-xs text-slate-400">Loading plan limits & entitlements...</div>;
+    return <div className="py-20 text-center text-xs text-[#6B6860]">Loading plan limits &amp; entitlements...</div>;
   }
 
   const currentPlanKey = entitlements?.planKey || user?.subscriptionPlan || 'FREE';
@@ -62,8 +62,8 @@ const SubscriptionPage = () => {
     <div className="space-y-8 max-w-6xl mx-auto">
       {/* Top Banner */}
       <div>
-        <h2 className="text-xl font-bold text-slate-900 tracking-tight">Subscription Plans & Entitlements</h2>
-        <p className="text-xs text-slate-500">
+        <h2 className="text-xl font-bold text-[#1C1C1A] tracking-tight">Subscription Plans &amp; Entitlements</h2>
+        <p className="text-xs text-[#6B6860]">
           Scale your practice with zero hidden limits. Feature access is gated through centralized entitlement checks.
         </p>
       </div>
@@ -76,12 +76,12 @@ const SubscriptionPage = () => {
       )}
 
       {/* Current Quota Status */}
-      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-xs">
+      <div className="bg-white p-6 rounded-xl border border-[#E8E4DC] shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
           <div>
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Tier</span>
+            <span className="text-xs font-semibold text-[#6B6860] uppercase tracking-wider">Active Tier</span>
             <div className="flex items-center gap-2 mt-1">
-              <h3 className="text-xl font-bold text-slate-900">{entitlements?.planName || currentPlanKey}</h3>
+              <h3 className="text-xl font-bold text-[#1C1C1A]">{entitlements?.planName || currentPlanKey}</h3>
               <Badge variant={user?.subscriptionStatus === 'cancelled' ? 'warning' : 'primary'}>
                 {user?.subscriptionStatus === 'cancelled' ? 'Cancelled (Expiring)' : 'Active Plan'}
               </Badge>
@@ -89,10 +89,10 @@ const SubscriptionPage = () => {
           </div>
 
           <div className="text-right flex flex-col sm:items-end">
-            <span className="text-xs font-bold text-slate-700">
+            <span className="text-xs font-bold text-[#1C1C1A]">
               {limits.currentClients} / {limits.maxClients} Clients Used
             </span>
-            <span className="block text-[11px] text-slate-400">({limits.maxClients - limits.currentClients} remaining)</span>
+            <span className="block text-[11px] text-[#6B6860]">({limits.maxClients - limits.currentClients} remaining)</span>
 
             {currentPlanKey !== 'FREE' && (
               <div className="mt-2 flex items-center gap-2">
@@ -111,7 +111,7 @@ const SubscriptionPage = () => {
                         alert(err.response?.data?.message || 'Reactivation failed');
                       }
                     }}
-                    className="text-xs font-semibold text-primary-600 hover:underline"
+                    className="text-xs font-semibold text-brand-600 hover:underline"
                   >
                     Reactivate Subscription
                   </button>
@@ -143,10 +143,10 @@ const SubscriptionPage = () => {
         </div>
 
         {/* Progress Bar */}
-        <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+        <div className="w-full bg-[#E8E4DC] rounded-full h-2.5 overflow-hidden">
           <div
             className={`h-2.5 rounded-full transition-all ${
-              clientPercent > 80 ? 'bg-rose-500' : clientPercent > 50 ? 'bg-amber-500' : 'bg-primary-600'
+              clientPercent > 80 ? 'bg-rose-500' : clientPercent > 50 ? 'bg-amber-500' : 'bg-brand-500'
             }`}
             style={{ width: `${clientPercent}%` }}
           />
@@ -163,25 +163,25 @@ const SubscriptionPage = () => {
               key={p.key}
               className={`rounded-2xl p-6 bg-white border flex flex-col justify-between transition-all ${
                 isCurrent
-                  ? 'border-primary-500 ring-2 ring-primary-500/20 shadow-md'
-                  : 'border-slate-200 shadow-xs hover:border-slate-300'
+                  ? 'border-brand-500 ring-2 ring-brand-500/20 shadow-md'
+                  : 'border-[#E8E4DC] shadow-xs hover:border-[#C8C4BC]'
               }`}
             >
               <div>
                 <div className="flex items-center justify-between">
-                  <h4 className="font-bold text-base text-slate-900">{p.name}</h4>
+                  <h4 className="font-bold text-base text-[#1C1C1A]">{p.name}</h4>
                   {isCurrent && <Badge variant="primary">Active</Badge>}
                 </div>
 
                 <div className="mt-4 mb-6">
-                  <span className="text-3xl font-extrabold text-slate-900">
+                  <span className="text-3xl font-extrabold text-[#1C1C1A]">
                     {p.monthlyPrice === 0 ? 'Free' : `₹${p.monthlyPrice}`}
                   </span>
-                  {p.monthlyPrice > 0 && <span className="text-xs text-slate-400"> / month</span>}
+                  {p.monthlyPrice > 0 && <span className="text-xs text-[#6B6860]"> / month</span>}
                 </div>
 
-                <div className="space-y-2.5 text-xs text-slate-600 border-t border-slate-100 pt-4">
-                  <div className="flex items-center gap-2 font-semibold text-slate-800">
+                <div className="space-y-2.5 text-xs text-[#6B6860] border-t border-[#E8E4DC] pt-4">
+                  <div className="flex items-center gap-2 font-semibold text-[#1C1C1A]">
                     <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                     <span>Up to {p.limits.maxClients} Active Clients</span>
                   </div>
@@ -195,7 +195,7 @@ const SubscriptionPage = () => {
                 </div>
               </div>
 
-              <div className="pt-6 mt-6 border-t border-slate-100">
+              <div className="pt-6 mt-6 border-t border-[#E8E4DC]">
                 {isCurrent ? (
                   <Button variant="secondary" className="w-full text-xs" disabled>
                     Current Plan

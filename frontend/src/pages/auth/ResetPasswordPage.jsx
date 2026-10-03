@@ -16,25 +16,15 @@ const ResetPasswordPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters long.');
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError('Passwords do not match.');
-      return;
-    }
-
+    if (password.length < 8) { setError('Password must be at least 8 characters long.'); return; }
+    if (password !== confirmPassword) { setError('Passwords do not match.'); return; }
     setLoading(true);
     setError('');
-
     try {
       const { data } = await api.post(`/auth/reset-password/${token}`, { password });
       if (data.success) {
         setSuccess(true);
-        setTimeout(() => {
-          navigate('/login');
-        }, 3000);
+        setTimeout(() => navigate('/login'), 3000);
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Password reset link is invalid or has expired.');
@@ -44,35 +34,26 @@ const ResetPasswordPage = () => {
   };
 
   return (
-    <div className="min-h-[80vh] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-[80vh] flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-cream">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="w-12 h-12 rounded-2xl bg-primary-600 text-white flex items-center justify-center font-extrabold text-xl mx-auto shadow-md">
+        <div className="w-12 h-12 rounded-2xl bg-brand-500 text-white flex items-center justify-center mx-auto shadow-md mb-4">
           <Lock className="w-6 h-6" />
         </div>
-        <h2 className="mt-4 text-center text-2xl font-bold tracking-tight text-slate-900">
-          Set New Password
-        </h2>
-        <p className="mt-1 text-center text-xs text-slate-500">
-          Enter your new password to regain access to your practice dashboard
-        </p>
+        <h2 className="text-center text-2xl font-bold tracking-tight text-[#1C1C1A]">Set New Password</h2>
+        <p className="mt-1 text-center text-xs text-[#6B6860]">Enter your new password to regain access to your practice dashboard</p>
       </div>
 
       <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-6 shadow-sm border border-slate-200 rounded-2xl sm:px-10">
+        <div className="bg-white py-8 px-6 shadow-sm border border-[#E8E4DC] rounded-2xl sm:px-10">
           {success ? (
             <div className="space-y-4 text-center">
               <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
-              <h3 className="text-base font-bold text-slate-800">Password Updated!</h3>
-              <p className="text-xs text-slate-500">
-                Your password has been changed successfully. Redirecting you to sign in...
-              </p>
+              <h3 className="text-base font-bold text-[#1C1C1A]">Password Updated!</h3>
+              <p className="text-xs text-[#6B6860]">Your password has been changed successfully. Redirecting you to sign in...</p>
               <div className="pt-2">
-                <Link
-                  to="/login"
-                  className="inline-block px-5 py-2 rounded-xl bg-primary-600 text-white font-semibold text-xs shadow-xs"
-                >
+                <Link to="/login" className="inline-block px-5 py-2 rounded-xl bg-brand-500 text-white font-semibold text-xs shadow-sm hover:bg-brand-600">
                   Sign In Now
                 </Link>
               </div>
@@ -80,48 +61,39 @@ const ResetPasswordPage = () => {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4 text-xs">
               {error && (
-                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 flex items-center gap-2 font-medium">
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
                   <span>{error}</span>
                 </div>
               )}
-
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">New Password</label>
+                <label className="block font-semibold text-[#1C1C1A] mb-1">New Password</label>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Min 8 characters (Upper, Lower, Number)"
-                    className="w-full border border-slate-300 rounded-xl p-2.5 pr-9 focus:ring-2 focus:ring-primary-500 outline-none"
+                    placeholder="Min 8 characters"
+                    className="w-full border border-[#E8E4DC] rounded-xl p-2.5 pr-9 focus:ring-2 focus:ring-brand-400 outline-none bg-[#FAF8F4]"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-slate-400 hover:text-slate-600"
-                  >
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3 text-[#9C9890] hover:text-[#6B6860]">
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
-
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Confirm New Password</label>
+                <label className="block font-semibold text-[#1C1C1A] mb-1">Confirm New Password</label>
                 <input
                   type="password"
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Re-enter new password"
-                  className="w-full border border-slate-300 rounded-xl p-2.5 focus:ring-2 focus:ring-primary-500 outline-none"
+                  className="w-full border border-[#E8E4DC] rounded-xl p-2.5 focus:ring-2 focus:ring-brand-400 outline-none bg-[#FAF8F4]"
                 />
               </div>
-
-              <Button type="submit" variant="primary" loading={loading} className="w-full">
-                Save New Password
-              </Button>
+              <Button type="submit" variant="primary" loading={loading} className="w-full">Save New Password</Button>
             </form>
           )}
         </div>

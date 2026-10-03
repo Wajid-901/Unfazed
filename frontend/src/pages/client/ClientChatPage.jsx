@@ -131,20 +131,20 @@ const ClientChatPage = () => {
   };
 
   if (loading) {
-    return <div className="py-20 text-center text-xs text-slate-400">Loading secure chat...</div>;
+    return <div className="py-20 text-center text-xs text-[#6B6860]">Loading secure chat...</div>;
   }
 
   return (
-    <div className="h-[calc(100vh-10rem)] bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-col overflow-hidden">
+    <div className="h-[calc(100vh-10rem)] bg-white rounded-2xl border border-[#E8E4DC] shadow-xs flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="h-16 px-6 border-b border-slate-200 flex items-center justify-between bg-white">
+      <div className="h-16 px-6 border-b border-[#E8E4DC] flex items-center justify-between bg-white">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-teal-600 to-teal-800 text-white font-bold text-sm flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-brand-600 to-brand-800 text-white font-bold text-sm flex items-center justify-center">
             {conversation?.participant.name?.charAt(0) || 'T'}
           </div>
           <div>
-            <h2 className="font-bold text-sm text-slate-900">{conversation?.participant.name}</h2>
-            <span className="text-xs text-teal-600 font-semibold">{conversation?.participant.title || 'Therapist'}</span>
+            <h2 className="font-bold text-sm text-[#1C1C1A]">{conversation?.participant.name}</h2>
+            <span className="text-xs text-brand-600 font-semibold">{conversation?.participant.title || 'Therapist'}</span>
           </div>
         </div>
 
@@ -155,7 +155,7 @@ const ClientChatPage = () => {
       </div>
 
       {/* Messages Stream */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-[#F8FAFC]">
+      <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-[#FAF8F4]">
         {messages.length > 0 ? (
           messages.map((m) => {
             const isMe = m.senderId === user?.id;
@@ -167,20 +167,20 @@ const ClientChatPage = () => {
                 <div
                   className={`max-w-md p-3.5 rounded-2xl text-xs leading-relaxed shadow-2xs ${
                     isMe
-                      ? 'bg-teal-600 text-white rounded-br-xs'
-                      : 'bg-white text-slate-800 border border-slate-200 rounded-bl-xs'
+                      ? 'bg-accent-500 text-white rounded-br-xs'
+                      : 'bg-white text-[#1C1C1A] border border-[#E8E4DC] rounded-bl-xs'
                   }`}
                 >
                   {m.message}
                 </div>
-                <div className="flex items-center gap-1 text-[10px] text-slate-400 mt-1 px-1">
+                <div className="flex items-center gap-1 text-[10px] text-[#6B6860] mt-1 px-1">
                   <span>{new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                   {isMe && (
                     <span>
                       {m.status === 'read' ? (
                         <CheckCheck className="w-3 h-3 text-emerald-500" />
                       ) : (
-                        <Check className="w-3 h-3 text-slate-400" />
+                        <Check className="w-3 h-3 text-[#6B6860]" />
                       )}
                     </span>
                   )}
@@ -189,18 +189,18 @@ const ClientChatPage = () => {
             );
           })
         ) : (
-          <div className="py-16 text-center text-xs text-slate-400 space-y-1">
-            <MessageSquare className="w-8 h-8 text-slate-300 mx-auto" />
-            <p className="font-semibold text-slate-600">Start the conversation</p>
-            <p className="text-[11px] text-slate-400">
+          <div className="py-16 text-center text-xs text-[#6B6860] space-y-1">
+            <MessageSquare className="w-8 h-8 text-[#C8C4BC] mx-auto" />
+            <p className="font-semibold text-[#1C1C1A]">Start the conversation</p>
+            <p className="text-[11px] text-[#6B6860]">
               Message your therapist with questions, session prep, or schedule clarifications.
             </p>
           </div>
         )}
 
         {isTyping && (
-          <div className="flex items-center gap-1.5 text-slate-400 text-xs italic">
-            <div className="w-2 h-2 rounded-full bg-slate-400 animate-pulse" />
+          <div className="flex items-center gap-1.5 text-[#6B6860] text-xs italic">
+            <div className="w-2 h-2 rounded-full bg-[#6B6860] animate-pulse" />
             <span>Therapist is typing...</span>
           </div>
         )}
@@ -209,18 +209,18 @@ const ClientChatPage = () => {
       </div>
 
       {/* Input Box */}
-      <form onSubmit={handleSendMessage} className="p-4 border-t border-slate-200 bg-white flex items-center gap-2">
+      <form onSubmit={handleSendMessage} className="p-4 border-t border-[#E8E4DC] bg-white flex items-center gap-2">
         <input
           type="text"
           placeholder="Type a confidential message..."
           value={newMessage}
           onChange={handleTyping}
-          className="flex-1 text-xs border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-teal-500 bg-slate-50"
+          className="flex-1 text-xs border border-[#E8E4DC] rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-brand-400 bg-[#FAF8F4]"
         />
         <button
           type="submit"
           disabled={!newMessage.trim()}
-          className="p-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white transition-colors flex-shrink-0 shadow-xs"
+          className="p-2.5 rounded-xl bg-accent-500 hover:bg-accent-600 disabled:opacity-50 text-white transition-colors flex-shrink-0 shadow-xs"
         >
           <Send className="w-4 h-4" />
         </button>

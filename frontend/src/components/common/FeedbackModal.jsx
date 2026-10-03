@@ -82,7 +82,7 @@ const FeedbackModal = ({ isOpen, onClose, defaultType = 'support' }) => {
                 type === 'support' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
               }`}
             >
-              <HelpCircle className="w-3.5 h-3.5 text-primary-600" />
+              <HelpCircle className="w-3.5 h-3.5 text-brand-500" />
               <span>Contact Support</span>
             </button>
             <button
@@ -106,36 +106,36 @@ const FeedbackModal = ({ isOpen, onClose, defaultType = 'support' }) => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Your Name</label>
+      <label className="block font-semibold text-[#1C1C1A] mb-1">Your Name</label>
               <input
                 type="text"
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Doctor / Client Name"
-                className="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-primary-500 outline-none"
+                className="w-full border border-[#E8E4DC] rounded-lg p-2 focus:ring-2 focus:ring-brand-400 outline-none"
               />
             </div>
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Email Address</label>
+              <label className="block font-semibold text-[#1C1C1A] mb-1">Email Address</label>
               <input
                 type="email"
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="you@domain.com"
-                className="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-primary-500 outline-none"
+                className="w-full border border-[#E8E4DC] rounded-lg p-2 focus:ring-2 focus:ring-brand-400 outline-none"
               />
             </div>
           </div>
 
           {type === 'support' ? (
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Inquiry Category</label>
+              <label className="block font-semibold text-[#1C1C1A] mb-1">Inquiry Category</label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-primary-500 outline-none bg-white"
+                className="w-full border border-[#E8E4DC] rounded-lg p-2 focus:ring-2 focus:ring-brand-400 outline-none bg-white"
               >
                 <option>Practice Setup & Digital Clinic</option>
                 <option>Booking & Calendar Scheduling</option>
@@ -146,11 +146,11 @@ const FeedbackModal = ({ isOpen, onClose, defaultType = 'support' }) => {
             </div>
           ) : (
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Bug Severity</label>
+              <label className="block font-semibold text-[#1C1C1A] mb-1">Bug Severity</label>
               <select
                 value={formData.severity}
                 onChange={(e) => setFormData({ ...formData, severity: e.target.value })}
-                className="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-primary-500 outline-none bg-white"
+                className="w-full border border-[#E8E4DC] rounded-lg p-2 focus:ring-2 focus:ring-brand-400 outline-none bg-white"
               >
                 <option>Low (Cosmetic or minor text typo)</option>
                 <option>Medium (Feature partially malfunctioning)</option>
@@ -160,19 +160,19 @@ const FeedbackModal = ({ isOpen, onClose, defaultType = 'support' }) => {
           )}
 
           <div>
-            <label className="block font-semibold text-slate-700 mb-1">Subject</label>
+            <label className="block font-semibold text-[#1C1C1A] mb-1">Subject</label>
             <input
               type="text"
               required
               value={formData.subject}
               onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
               placeholder={type === 'bug' ? 'Brief summary of the issue' : 'How can we help you?'}
-              className="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-primary-500 outline-none"
+              className="w-full border border-[#E8E4DC] rounded-lg p-2 focus:ring-2 focus:ring-brand-400 outline-none"
             />
           </div>
 
           <div>
-            <label className="block font-semibold text-slate-700 mb-1">
+            <label className="block font-semibold text-[#1C1C1A] mb-1">
               {type === 'bug' ? 'Description & Observed Behavior' : 'Message'}
             </label>
             <textarea
@@ -185,7 +185,7 @@ const FeedbackModal = ({ isOpen, onClose, defaultType = 'support' }) => {
                   ? 'What happened vs. what did you expect to happen?'
                   : 'Please describe your request in detail...'
               }
-              className="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-primary-500 outline-none"
+              className="w-full border border-[#E8E4DC] rounded-lg p-2 focus:ring-2 focus:ring-brand-400 outline-none"
             />
           </div>
 
@@ -199,12 +199,12 @@ const FeedbackModal = ({ isOpen, onClose, defaultType = 'support' }) => {
                 value={formData.stepsToReproduce}
                 onChange={(e) => setFormData({ ...formData, stepsToReproduce: e.target.value })}
                 placeholder="1. Go to Calendar&#10;2. Click Add Slot&#10;3. Click Save"
-                className="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-primary-500 outline-none font-mono text-[11px]"
+              className="w-full border border-[#E8E4DC] rounded-lg p-2 focus:ring-2 focus:ring-brand-400 outline-none font-mono text-[11px]"
               />
             </div>
           )}
 
-          <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+          <div className="flex items-center justify-between pt-3 border-t border-[#E8E4DC]">
             <span className="text-[11px] text-slate-400">Direct email: support@unfazed.in</span>
             <div className="flex gap-2">
               <Button type="button" variant="secondary" onClick={onClose} disabled={submitting}>

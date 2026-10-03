@@ -1,0 +1,27 @@
+{
+  "id": "FEAT-001",
+  "type": "chore",
+  "description": "Foundation: update Tailwind config with new brand/accent/cream color tokens and DM Sans font family; add Google Fonts @import to index.css; delete the unused ClientPortalPage.jsx file. This FEAT has no dependencies and must be done first — all later FEATs use the new token names (brand-, accent-, cream) that this FEAT introduces.",
+  "status": "pending",
+  "steps": [
+    "Read context.json at c:\\Users\\py293\\OneDrive\\Desktop\\Unfazed\\.agents\\tasks\\ui-redesign\\context.json before starting.",
+    "Delete c:\\Users\\py293\\OneDrive\\Desktop\\Unfazed\\frontend\\src\\pages\\client\\ClientPortalPage.jsx — it is not imported by AppRoutes.jsx and is a duplicate of ClientDashboardPage functionality.",
+    "Edit c:\\Users\\py293\\OneDrive\\Desktop\\Unfazed\\frontend\\tailwind.config.js: remove the existing `primary` and `therapy` color keys; add `brand` (50→900 scale, base #4A5240), `accent` (50→900 scale, base #C4622D), and `cream: '#F5F0E8'` color tokens; add `fontFamily: { sans: ['DM Sans', 'sans-serif'] }` under `theme.extend`.",
+    "Edit c:\\Users\\py293\\OneDrive\\Desktop\\Unfazed\\frontend\\src\\index.css: add `@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');` as the FIRST line (before @tailwind directives); change `@apply bg-slate-50 text-slate-900;` on body to `@apply bg-cream text-[#2C2C2C] font-sans;`; update scrollbar thumb from `bg-slate-300` to `bg-brand-200` and hover from `bg-slate-400` to `bg-brand-300`.",
+    "Run `cd c:\\Users\\py293\\OneDrive\\Desktop\\Unfazed\\frontend && npm run build` and confirm 0 errors.",
+    "Commit: `git -C c:\\Users\\py293\\OneDrive\\Desktop\\Unfazed add frontend/tailwind.config.js frontend/src/index.css && git -C c:\\Users\\py293\\OneDrive\\Desktop\\Unfazed rm frontend/src/pages/client/ClientPortalPage.jsx && git -C c:\\Users\\py293\\OneDrive\\Desktop\\Unfazed commit -m 'feat(ui): add brand/accent/cream tokens, DM Sans font, delete unused ClientPortalPage'`",
+    "Set FEAT-001 status to 'completed' in this file and record findings."
+  ],
+  "acceptance_criteria": [
+    "`npm run build` in frontend/ completes with 0 errors after changes",
+    "ClientPortalPage.jsx no longer exists at frontend/src/pages/client/ClientPortalPage.jsx",
+    "tailwind.config.js exports a `brand`, `accent`, and `cream` color token; no `primary` or `therapy` keys remain",
+    "index.css first line is the DM Sans @import",
+    "body rule in index.css uses `bg-cream` and `font-sans`"
+  ],
+  "verification": [
+    "cd c:\\Users\\py293\\OneDrive\\Desktop\\Unfazed\\frontend && npm run build"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

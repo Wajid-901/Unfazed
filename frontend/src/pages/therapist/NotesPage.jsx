@@ -93,8 +93,8 @@ const NotesPage = () => {
       </div>
 
       {/* Privacy Notice Banner */}
-      <div className="p-4 bg-primary-50/60 border border-primary-100 rounded-xl flex items-start gap-3">
-        <Lock className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" />
+      <div className="p-4 bg-brand-50/60 border border-brand-100 rounded-xl flex items-start gap-3">
+        <Lock className="w-5 h-5 text-brand-500 flex-shrink-0 mt-0.5" />
         <div className="text-xs text-slate-700">
           <strong className="text-slate-900">Privacy Separation Guarantee:</strong> Notes marked as{' '}
           <span className="font-semibold text-rose-600">PRIVATE</span> are encrypted and only accessible in your therapist dashboard. Only notes marked as{' '}
@@ -186,12 +186,12 @@ const NotesPage = () => {
         <form onSubmit={handleCreateNote} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Select Client</label>
+              <label className="block text-xs font-semibold text-[#1C1C1A] mb-1">Select Client</label>
               <select
                 required
                 value={form.clientId}
                 onChange={(e) => setForm({ ...form, clientId: e.target.value })}
-                className="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-primary-500 outline-none"
+                className="w-full text-xs border border-[#E8E4DC] rounded-lg p-2 focus:ring-2 focus:ring-brand-400 outline-none bg-[#FAF8F4]"
               >
                 <option value="">-- Choose client --</option>
                 {clients.map((c) => (
@@ -203,12 +203,12 @@ const NotesPage = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Related Session</label>
+              <label className="block text-xs font-semibold text-[#1C1C1A] mb-1">Related Session</label>
               <select
                 required
                 value={form.sessionId}
                 onChange={(e) => setForm({ ...form, sessionId: e.target.value })}
-                className="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-primary-500 outline-none"
+                className="w-full text-xs border border-[#E8E4DC] rounded-lg p-2 focus:ring-2 focus:ring-brand-400 outline-none bg-[#FAF8F4]"
               >
                 <option value="">-- Choose session --</option>
                 {sessions.map((s) => (
@@ -222,7 +222,7 @@ const NotesPage = () => {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Template Format</label>
+              <label className="block text-xs font-semibold text-[#1C1C1A] mb-1">Template Format</label>
               <div className="flex gap-2">
                 {['SOAP', 'GENERAL'].map((type) => (
                   <button
@@ -231,8 +231,8 @@ const NotesPage = () => {
                     onClick={() => setTemplateType(type)}
                     className={`flex-1 py-1.5 text-xs font-semibold rounded-lg border transition-colors ${
                       templateType === type
-                        ? 'bg-primary-600 text-white border-primary-600'
-                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                        ? 'bg-brand-500 text-white border-brand-500'
+                        : 'bg-white text-[#6B6860] border-[#E8E4DC] hover:bg-brand-50'
                     }`}
                   >
                     {type}
@@ -242,11 +242,11 @@ const NotesPage = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Visibility Level</label>
+              <label className="block text-xs font-semibold text-[#1C1C1A] mb-1">Visibility Level</label>
               <select
                 value={form.visibility}
                 onChange={(e) => setForm({ ...form, visibility: e.target.value })}
-                className="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-primary-500 outline-none"
+                className="w-full text-xs border border-[#E8E4DC] rounded-lg p-2 focus:ring-2 focus:ring-brand-400 outline-none bg-[#FAF8F4]"
               >
                 <option value="PRIVATE">PRIVATE (Only Therapist)</option>
                 <option value="SHARED">SHARED (Client Portal Accessible)</option>
@@ -263,7 +263,7 @@ const NotesPage = () => {
                   value={form.soap.subjective}
                   onChange={(e) => setForm({ ...form, soap: { ...form.soap, subjective: e.target.value } })}
                   placeholder="Client's reported mood, feelings, symptoms, or statements..."
-                  className="w-full text-xs border border-slate-300 rounded-lg p-2 outline-none"
+                  className="w-full text-xs border border-[#E8E4DC] rounded-lg p-2 outline-none bg-[#FAF8F4]"
                 />
               </div>
               <div>
@@ -273,7 +273,7 @@ const NotesPage = () => {
                   value={form.soap.objective}
                   onChange={(e) => setForm({ ...form, soap: { ...form.soap, objective: e.target.value } })}
                   placeholder="Therapist's clinical observations, affect, speech, behavior..."
-                  className="w-full text-xs border border-slate-300 rounded-lg p-2 outline-none"
+                  className="w-full text-xs border border-[#E8E4DC] rounded-lg p-2 outline-none bg-[#FAF8F4]"
                 />
               </div>
               <div>
@@ -283,7 +283,7 @@ const NotesPage = () => {
                   value={form.soap.assessment}
                   onChange={(e) => setForm({ ...form, soap: { ...form.soap, assessment: e.target.value } })}
                   placeholder="Clinical evaluation, progress, themes explored..."
-                  className="w-full text-xs border border-slate-300 rounded-lg p-2 outline-none"
+                  className="w-full text-xs border border-[#E8E4DC] rounded-lg p-2 outline-none bg-[#FAF8F4]"
                 />
               </div>
               <div>
@@ -293,13 +293,13 @@ const NotesPage = () => {
                   value={form.soap.plan}
                   onChange={(e) => setForm({ ...form, soap: { ...form.soap, plan: e.target.value } })}
                   placeholder="Interventions, homework, goals for next session..."
-                  className="w-full text-xs border border-slate-300 rounded-lg p-2 outline-none"
+                  className="w-full text-xs border border-[#E8E4DC] rounded-lg p-2 outline-none bg-[#FAF8F4]"
                 />
               </div>
             </div>
           ) : (
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Session Summary (Rich Text)</label>
+              <label className="block text-xs font-semibold text-[#1C1C1A] mb-1">Session Summary (Rich Text)</label>
               <RichTextEditor
                 value={form.body}
                 onChange={(html) => setForm({ ...form, body: html })}

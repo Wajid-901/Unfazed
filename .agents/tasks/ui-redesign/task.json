@@ -1,0 +1,7 @@
+{
+  "task_id": "task-ui-redesign",
+  "task_description": "Full UI reskin of the Unfazed frontend: new brand color palette (olive #4A5240, terracotta #C4622D, cream #F5F0E8), DM Sans font, full responsiveness pass, deletion of unused ClientPortalPage.jsx, and a build-passing commit to GitHub.",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}
