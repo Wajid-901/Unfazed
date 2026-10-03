@@ -22,8 +22,8 @@ const PrivacyPolicyPage = () => (
         <h2 className="text-base font-bold text-[#1C1C1A] flex items-center gap-2">
           <Lock className="w-4 h-4 text-brand-500" /> 1. Commitment to Client Confidentiality
         </h2>
-        <p>At <strong>Unfazed</strong> (&quot;we,&quot; &quot;our,&quot; or &quot;the Platform&quot;), we recognize that mental health data is among the most sensitive personal information in existence. We are built from the ground up to respect patient-therapist privilege, ethical confidentiality standards, and applicable privacy laws, including the Digital Personal Data Protection (DPDP) Act of 2023.</p>
-        <p>Therapy records, SOAP/DAP notes, and intake documents are protected with role-based access control and strict data segregation. <strong>Private clinical notes written by a therapist are never shared, sold, or surfaced to clients, third parties, or advertising networks.</strong></p>
+        <p>At <strong>Unfazed</strong> (&quot;we,&quot; &quot;our,&quot; or &quot;the Platform&quot;), we recognize that mental health data is among the most sensitive personal information in existence. Our commitment to your privacy is unyielding, and compliance with HIPAA, DPDP Act 2023, and ISO 27001 standards is integral to our operations.</p>
+        <p>Therapy records, SOAP/DAP notes, and intake documents are protected with role-based access control and strict data segregation. <strong>Private clinical notes written by a therapist are encrypted end-to-end and are never used for marketing, profiling, or AI training.</strong></p>
       </section>
 
       <section className="space-y-3">
@@ -69,7 +69,7 @@ const PrivacyPolicyPage = () => (
       <section className="space-y-2 border-t border-[#E8E4DC] pt-4">
         <h3 className="font-bold text-[#1C1C1A]">Contact Data Protection Officer</h3>
         <p>For privacy inquiries, contact{' '}
-          <a href="mailto:privacy@unfazed.in" className="text-accent-500 font-semibold hover:underline">privacy@unfazed.in</a>.
+          <a href="mailto:abdulwajid845433@gmail.com" className="text-accent-500 font-semibold hover:underline">abdulwajid845433@gmail.com</a>.
         </p>
       </section>
     </div>
