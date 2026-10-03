@@ -3,7 +3,22 @@ import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
-import { Check, Shield, Zap, Sparkles, AlertCircle } from 'lucide-react';
+import { Check, Shield, Zap, Sparkles, AlertCircle, CreditCard } from 'lucide-react';
+
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
 
 const SubscriptionPage = () => {
   const { user, updateUser } = useAuth();
@@ -12,6 +27,7 @@ const SubscriptionPage = () => {
   const [loading, setLoading] = useState(true);
   const [upgradingKey, setUpgradingKey] = useState(null);
   const [message, setMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const fetchData = async () => {
     try {
@@ -33,19 +49,111 @@ const SubscriptionPage = () => {
     fetchData();
   }, []);
 
-  const handleUpgrade = async (planKey) => {
+  const handleSubscribe = async (planKey) => {
     setUpgradingKey(planKey);
     setMessage('');
+    setErrorMessage('');
+
     try {
-      const { data } = await api.post('/subscriptions/upgrade', { planKey });
-      if (data.success) {
-        updateUser({ subscriptionPlan: planKey });
-        setMessage(`Successfully switched to ${planKey} plan!`);
-        fetchData();
+      // 1. If switching to FREE plan (downgrade)
+      if (planKey === 'FREE') {
+        if (!window.confirm('Are you sure you want to downgrade to the Free Starter plan? You will be limited to 5 active clients.')) {
+          setUpgradingKey(null);
+          return;
+        }
+        const { data } = await api.post('/subscriptions/switch-free');
+        if (data.success) {
+          updateUser({ subscriptionPlan: 'FREE', subscriptionStatus: 'active' });
+          setMessage('Successfully switched to Free Starter plan!');
+          fetchData();
+        }
+        setUpgradingKey(null);
+        return;
+      }
+
+      // 2. Paid Plan: Create Razorpay Order
+      const { data: orderData } = await api.post('/subscriptions/create-order', { planKey });
+      if (!orderData?.success) {
+        throw new Error(orderData?.message || 'Failed to initiate subscription order.');
+      }
+
+      const activeKey = orderData.keyId || import.meta.env.VITE_RAZORPAY_KEY;
+      const isPlaceholder = !activeKey || activeKey.includes('placeholder');
+
+      // 3. Open Razorpay Checkout modal if real key is configured
+      if (!isPlaceholder) {
+        const scriptLoaded = await loadRazorpayScript();
+        if (!scriptLoaded) {
+          throw new Error('Razorpay SDK failed to load. Please check your internet connection.');
+        }
+
+        const options = {
+          key: activeKey,
+          amount: orderData.amount * 100, // paise
+          currency: orderData.currency || 'INR',
+          name: 'Unfazed Practice',
+          description: `Subscription to ${orderData.plan?.name || planKey}`,
+          order_id: orderData.orderId,
+          handler: async (response) => {
+            try {
+              const { data: verifyRes } = await api.post('/subscriptions/verify-payment', {
+                orderId: response.razorpay_order_id,
+                paymentId: response.razorpay_payment_id,
+                signature: response.razorpay_signature,
+                planKey,
+                paymentRecordId: orderData.paymentRecordId
+              });
+
+              if (verifyRes?.success) {
+                updateUser({ subscriptionPlan: planKey, subscriptionStatus: 'active' });
+                setMessage(`🎉 Payment successful! You are now subscribed to ${orderData.plan?.name || planKey}. Invoice: ${verifyRes.invoiceNumber || 'Generated'}`);
+                fetchData();
+              } else {
+                throw new Error(verifyRes?.message || 'Payment verification failed.');
+              }
+            } catch (vErr) {
+              setErrorMessage(vErr.response?.data?.message || vErr.message || 'Payment verification failed.');
+            } finally {
+              setUpgradingKey(null);
+            }
+          },
+          prefill: {
+            name: user?.name || '',
+            email: user?.email || ''
+          },
+          theme: {
+            color: '#4A5240'
+          }
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.on('payment.failed', function (resp) {
+          setErrorMessage(resp.error?.description || 'Payment was cancelled or failed.');
+          setUpgradingKey(null);
+        });
+        rzp.open();
+      } else {
+        // Dev Simulation Fallback
+        const { data: verifyRes } = await api.post('/subscriptions/verify-payment', {
+          orderId: orderData.orderId,
+          paymentId: `pay_mock_${Date.now()}`,
+          signature: `mock_sig_${Date.now()}`,
+          planKey,
+          paymentRecordId: orderData.paymentRecordId
+        });
+
+        if (verifyRes?.success) {
+          updateUser({ subscriptionPlan: planKey, subscriptionStatus: 'active' });
+          setMessage(`[Dev Mode] Payment verified! You are now subscribed to ${orderData.plan?.name || planKey}.`);
+          fetchData();
+        } else {
+          throw new Error(verifyRes?.message || 'Mock payment verification failed.');
+        }
+        setUpgradingKey(null);
       }
     } catch (err) {
-      alert(err.response?.data?.message || 'Upgrade failed');
-    } finally {
+      console.error('Subscription error:', err);
+      setErrorMessage(err.response?.data?.message || err.message || 'Subscription upgrade failed.');
       setUpgradingKey(null);
     }
   };
@@ -64,7 +172,7 @@ const SubscriptionPage = () => {
       <div>
         <h2 className="text-xl font-bold text-[#1C1C1A] tracking-tight">Subscription Plans &amp; Entitlements</h2>
         <p className="text-xs text-[#6B6860]">
-          Scale your practice with zero hidden limits. Feature access is gated through centralized entitlement checks.
+          Scale your practice with zero hidden limits. Secure payments powered by Razorpay.
         </p>
       </div>
 
@@ -72,6 +180,13 @@ const SubscriptionPage = () => {
         <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center gap-2 font-medium">
           <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
           <span>{message}</span>
+        </div>
+      )}
+
+      {errorMessage && (
+        <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 flex items-center gap-2 font-medium">
+          <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+          <span>{errorMessage}</span>
         </div>
       )}
 
@@ -92,7 +207,7 @@ const SubscriptionPage = () => {
             <span className="text-xs font-bold text-[#1C1C1A]">
               {limits.currentClients} / {limits.maxClients} Clients Used
             </span>
-            <span className="block text-[11px] text-[#6B6860]">({limits.maxClients - limits.currentClients} remaining)</span>
+            <span className="block text-[11px] text-[#6B6860]">({Math.max(0, limits.maxClients - limits.currentClients)} remaining)</span>
 
             {currentPlanKey !== 'FREE' && (
               <div className="mt-2 flex items-center gap-2">
@@ -108,7 +223,7 @@ const SubscriptionPage = () => {
                           fetchData();
                         }
                       } catch (err) {
-                        alert(err.response?.data?.message || 'Reactivation failed');
+                        setErrorMessage(err.response?.data?.message || 'Reactivation failed');
                       }
                     }}
                     className="text-xs font-semibold text-brand-600 hover:underline"
@@ -128,7 +243,7 @@ const SubscriptionPage = () => {
                             fetchData();
                           }
                         } catch (err) {
-                          alert(err.response?.data?.message || 'Cancellation failed');
+                          setErrorMessage(err.response?.data?.message || 'Cancellation failed');
                         }
                       }
                     }}
@@ -203,11 +318,18 @@ const SubscriptionPage = () => {
                 ) : (
                   <Button
                     variant={p.key === 'PRO' ? 'primary' : 'secondary'}
-                    className="w-full text-xs"
+                    className="w-full text-xs flex items-center justify-center gap-1.5"
                     loading={upgradingKey === p.key}
-                    onClick={() => handleUpgrade(p.key)}
+                    onClick={() => handleSubscribe(p.key)}
                   >
-                    Switch to {p.name}
+                    {p.monthlyPrice > 0 ? (
+                      <>
+                        <CreditCard className="w-3.5 h-3.5" />
+                        <span>Subscribe for ₹{p.monthlyPrice}</span>
+                      </>
+                    ) : (
+                      <span>Switch to {p.name}</span>
+                    )}
                   </Button>
                 )}
               </div>

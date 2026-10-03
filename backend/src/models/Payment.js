@@ -5,7 +5,7 @@ const paymentSchema = new mongoose.Schema(
     clientId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Client',
-      required: true,
+      default: null,
       index: true
     },
     therapistId: {
@@ -13,6 +13,16 @@ const paymentSchema = new mongoose.Schema(
       ref: 'Therapist',
       required: true,
       index: true
+    },
+    type: {
+      type: String,
+      enum: ['SESSION', 'SUBSCRIPTION', 'PACKAGE'],
+      default: 'SESSION',
+      index: true
+    },
+    planKey: {
+      type: String,
+      default: null
     },
     sessionId: {
       type: mongoose.Schema.Types.ObjectId,
