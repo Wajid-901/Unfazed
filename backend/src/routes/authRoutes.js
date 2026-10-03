@@ -11,7 +11,8 @@ const {
   forgotPassword,
   resetPassword,
   verifyEmail,
-  setupClientPassword
+  setupClientPassword,
+  resendVerification
 } = require('../controllers/authController');
 const {
   registerValidator,
@@ -39,6 +40,7 @@ router.get('/me', authenticate, getMe);
 router.post('/forgot-password', authLimiter, forgotPassword);
 router.post('/reset-password/:token', authLimiter, resetPassword);
 router.get('/verify-email/:token', verifyEmail);
+router.post('/resend-verification', authLimiter, resendVerification);
 // Client invite — no auth required, client uses this to set their own password
 router.post('/client/setup-password', authLimiter, setupClientPassword);
 

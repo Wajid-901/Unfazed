@@ -145,10 +145,49 @@ const updateAvailability = async (req, res, next) => {
   }
 };
 
+const uploadService = require('../services/UploadService');
+
+const uploadAvatar = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No image file uploaded'
+      });
+    }
+
+    const therapist = await Therapist.findById(req.user.id);
+    if (!therapist) {
+      return res.status(404).json({ success: false, message: 'Therapist not found' });
+    }
+
+    // Delete old Cloudinary image if exists
+    if (therapist.cloudinaryPublicId) {
+      await uploadService.deleteImage(therapist.cloudinaryPublicId);
+    }
+
+    const uploadResult = await uploadService.uploadAvatar(req.file.buffer, req.file.mimetype);
+
+    therapist.profileImageUrl = uploadResult.url;
+    therapist.cloudinaryPublicId = uploadResult.publicId;
+    await therapist.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Avatar uploaded successfully',
+      profileImageUrl: therapist.profileImageUrl,
+      cloudinaryPublicId: therapist.cloudinaryPublicId
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getProfile,
   updateProfile,
   getDashboardOverview,
   getAvailability,
-  updateAvailability
+  updateAvailability,
+  uploadAvatar
 };

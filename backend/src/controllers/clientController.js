@@ -1,7 +1,9 @@
 const Client = require('../models/Client');
+const Therapist = require('../models/Therapist');
 const Session = require('../models/Session');
 const Payment = require('../models/Payment');
 const SessionNote = require('../models/SessionNote');
+const emailService = require('../services/EmailService');
 const crypto = require('crypto');
 
 const getClients = async (req, res, next) => {
@@ -170,11 +172,20 @@ const createClient = async (req, res, next) => {
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
         const inviteLink = `${frontendUrl}/client/setup-password?token=${inviteToken}`;
 
+        const therapist = await Therapist.findById(req.user.id).select('name');
+        const therapistName = therapist?.name || req.user.name || 'Your therapist';
+        await emailService.sendClientInvite({
+            toEmail: client.email,
+            toName: client.name,
+            therapistName,
+            inviteLink
+        });
+
         res.status(201).json({
             success: true,
-            message: 'Client added successfully. Share the invite link with your client.',
+            message: 'Client added successfully and invitation emailed.',
             client,
-            inviteLink
+            inviteLink: process.env.NODE_ENV !== 'production' ? inviteLink : undefined
         });
     } catch (error) {
         next(error);
@@ -208,9 +219,19 @@ const resendInvite = async (req, res, next) => {
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
         const inviteLink = `${frontendUrl}/client/setup-password?token=${inviteToken}`;
 
+        const therapist = await Therapist.findById(req.user.id).select('name');
+        const therapistName = therapist?.name || req.user.name || 'Your therapist';
+        await emailService.sendClientInvite({
+            toEmail: client.email,
+            toName: client.name,
+            therapistName,
+            inviteLink
+        });
+
         res.status(200).json({
             success: true,
-            inviteLink
+            message: 'Invitation link resent to client email.',
+            inviteLink: process.env.NODE_ENV !== 'production' ? inviteLink : undefined
         });
     } catch (error) {
         next(error);

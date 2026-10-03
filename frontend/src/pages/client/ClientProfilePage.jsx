@@ -13,6 +13,7 @@ const ClientProfilePage = () => {
     emergencyContactPhone: '',
     emergencyContactRelation: ''
   });
+  const [errors, setErrors] = useState({});
   const [therapistInfo, setTherapistInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -54,13 +55,55 @@ const ClientProfilePage = () => {
     };
   }, []);
 
+  const validateField = (name, value) => {
+    let err = '';
+    if (name === 'name') {
+      if (!value || value.trim().length < 2) err = 'Name must be at least 2 characters';
+      else if (value.trim().length > 100) err = 'Name cannot exceed 100 characters';
+    } else if (name === 'phone' || name === 'emergencyContactPhone') {
+      if (value && !/^[6-9]\d{9}$/.test(value.replace(/[\s-]/g, ''))) {
+        err = 'Enter a valid 10-digit mobile number';
+      }
+    }
+    return err;
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    const err = validateField(name, value);
+    setErrors((prev) => {
+      const next = { ...prev };
+      if (err) next[name] = err;
+      else delete next[name];
+      return next;
+    });
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[name];
+        return next;
+      });
+    }
   };
 
   const handleSave = async (e) => {
     e.preventDefault();
+    const formErrors = {};
+    ['name', 'phone', 'emergencyContactPhone'].forEach((key) => {
+      const err = validateField(key, form[key]);
+      if (err) formErrors[key] = err;
+    });
+
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
+      return;
+    }
+
     setSaving(true);
     setError('');
     try {
@@ -144,9 +187,13 @@ const ClientProfilePage = () => {
                 name="name"
                 value={form.name}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="Your full name"
-                className="w-full text-sm border border-[#E8E4DC] rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-brand-400 bg-[#FAF8F4] placeholder:text-[#6B6860]"
+                className={`w-full text-sm border rounded-xl px-4 py-2.5 outline-none focus:ring-2 bg-[#FAF8F4] placeholder:text-[#6B6860] ${
+                  errors.name ? 'border-rose-400 focus:ring-rose-300' : 'border-[#E8E4DC] focus:ring-brand-400'
+                }`}
               />
+              {errors.name && <p className="text-xs text-rose-600 mt-1">{errors.name}</p>}
             </div>
             <div>
               <label className="block text-xs font-semibold text-[#1C1C1A] mb-1.5">
@@ -159,10 +206,14 @@ const ClientProfilePage = () => {
                   name="phone"
                   value={form.phone}
                   onChange={handleChange}
-                  placeholder="+91 XXXXX XXXXX"
-                  className="w-full text-sm border border-[#E8E4DC] rounded-xl pl-9 pr-4 py-2.5 outline-none focus:ring-2 focus:ring-brand-400 bg-[#FAF8F4] placeholder:text-[#6B6860]"
+                  onBlur={handleBlur}
+                  placeholder="9876543210"
+                  className={`w-full text-sm border rounded-xl pl-9 pr-4 py-2.5 outline-none focus:ring-2 bg-[#FAF8F4] placeholder:text-[#6B6860] ${
+                    errors.phone ? 'border-rose-400 focus:ring-rose-300' : 'border-[#E8E4DC] focus:ring-brand-400'
+                  }`}
                 />
               </div>
+              {errors.phone && <p className="text-xs text-rose-600 mt-1">{errors.phone}</p>}
             </div>
           </div>
         </div>
@@ -198,10 +249,14 @@ const ClientProfilePage = () => {
                   name="emergencyContactPhone"
                   value={form.emergencyContactPhone}
                   onChange={handleChange}
-                  placeholder="+91 XXXXX XXXXX"
-                  className="w-full text-sm border border-[#E8E4DC] rounded-xl pl-9 pr-4 py-2.5 outline-none focus:ring-2 focus:ring-brand-400 bg-[#FAF8F4] placeholder:text-[#6B6860]"
+                  onBlur={handleBlur}
+                  placeholder="9876543210"
+                  className={`w-full text-sm border rounded-xl pl-9 pr-4 py-2.5 outline-none focus:ring-2 bg-[#FAF8F4] placeholder:text-[#6B6860] ${
+                    errors.emergencyContactPhone ? 'border-rose-400 focus:ring-rose-300' : 'border-[#E8E4DC] focus:ring-brand-400'
+                  }`}
                 />
               </div>
+              {errors.emergencyContactPhone && <p className="text-xs text-rose-600 mt-1">{errors.emergencyContactPhone}</p>}
             </div>
             <div>
               <label className="block text-xs font-semibold text-[#1C1C1A] mb-1.5">
@@ -223,8 +278,8 @@ const ClientProfilePage = () => {
         <div className="pt-2">
           <button
             type="submit"
-            disabled={saving}
-            className="inline-flex items-center gap-2 bg-accent-500 hover:bg-accent-600 disabled:opacity-60 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-colors"
+            disabled={saving || Object.keys(errors).length > 0}
+            className="inline-flex items-center gap-2 bg-accent-500 hover:bg-accent-600 disabled:opacity-60 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-colors disabled:cursor-not-allowed"
           >
             <Save className="w-4 h-4" />
             {saving ? 'Saving...' : 'Save Changes'}

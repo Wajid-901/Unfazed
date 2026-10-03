@@ -6,11 +6,13 @@ const {
     getSessions,
     createSession,
     updateSessionStatus,
-    getClientSessions
+    getClientSessions,
+    cancelClientSession
 } = require('../controllers/sessionController');
 
 // CLIENT route — must come before /:id wildcards (none here, but good practice)
 router.get('/mine', authenticate, authorize('CLIENT'), getClientSessions);
+router.patch('/:id/cancel', authenticate, authorize('CLIENT'), cancelClientSession);
 
 // THERAPIST routes
 router.get('/', authenticate, authorize('THERAPIST'), getSessions);

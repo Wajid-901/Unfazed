@@ -11,6 +11,8 @@ const ClientChatPage = () => {
   const [conversation, setConversation] = useState(null);
   const [isTyping, setIsTyping] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
 
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -61,9 +63,10 @@ const ClientChatPage = () => {
           const conv = convRes.data.conversations[0];
           setConversation(conv);
 
-          const msgRes = await api.get(`/chat/messages/${conv.conversationId}`);
+          const msgRes = await api.get(`/chat/messages/${conv.conversationId}?limit=50`);
           if (msgRes.data.success) {
             setMessages(msgRes.data.messages || []);
+            setHasMore(Boolean(msgRes.data.hasMore));
           }
 
           socketRef.current?.emit('join_conversation', {
@@ -91,6 +94,25 @@ const ClientChatPage = () => {
       }
     };
   }, []);
+
+  const loadOlderMessages = async () => {
+    if (!conversation || !hasMore || loadingOlder || messages.length === 0) return;
+    setLoadingOlder(true);
+    try {
+      const oldest = messages[0].createdAt;
+      const { data } = await api.get(
+        `/chat/messages/${conversation.conversationId}?limit=50&before=${encodeURIComponent(oldest)}`
+      );
+      if (data.success && data.messages) {
+        setMessages((prev) => [...data.messages, ...prev]);
+        setHasMore(Boolean(data.hasMore));
+      }
+    } catch (err) {
+      console.error('Failed to load older messages:', err);
+    } finally {
+      setLoadingOlder(false);
+    }
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -156,6 +178,18 @@ const ClientChatPage = () => {
 
       {/* Messages Stream */}
       <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-[#FAF8F4]">
+        {hasMore && (
+          <div className="text-center pb-2">
+            <button
+              type="button"
+              onClick={loadOlderMessages}
+              disabled={loadingOlder}
+              className="text-xs text-brand-600 hover:text-brand-700 font-semibold bg-white border border-[#E8E4DC] px-3.5 py-1.5 rounded-full shadow-2xs transition-colors disabled:opacity-50"
+            >
+              {loadingOlder ? 'Loading older messages...' : 'Load older messages'}
+            </button>
+          </div>
+        )}
         {messages.length > 0 ? (
           messages.map((m) => {
             const isMe = m.senderId === user?.id;

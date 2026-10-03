@@ -25,6 +25,8 @@ const ChatPage = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
 
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -96,9 +98,10 @@ const ChatPage = () => {
     const fetchMessages = async () => {
       setLoadingMessages(true);
       try {
-        const { data } = await api.get(`/chat/messages/${activeConv.conversationId}`);
+        const { data } = await api.get(`/chat/messages/${activeConv.conversationId}?limit=50`);
         if (data.success) {
           setMessages(data.messages || []);
+          setHasMore(Boolean(data.hasMore));
         }
 
         socketRef.current?.emit('join_conversation', {
@@ -123,6 +126,25 @@ const ChatPage = () => {
       });
     };
   }, [activeConv]);
+
+  const loadOlderMessages = async () => {
+    if (!activeConv || !hasMore || loadingOlder || messages.length === 0) return;
+    setLoadingOlder(true);
+    try {
+      const oldest = messages[0].createdAt;
+      const { data } = await api.get(
+        `/chat/messages/${activeConv.conversationId}?limit=50&before=${encodeURIComponent(oldest)}`
+      );
+      if (data.success && data.messages) {
+        setMessages((prev) => [...data.messages, ...prev]);
+        setHasMore(Boolean(data.hasMore));
+      }
+    } catch (err) {
+      console.error('Failed to load older messages:', err);
+    } finally {
+      setLoadingOlder(false);
+    }
+  };
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -262,6 +284,18 @@ const ChatPage = () => {
 
           {/* Message Stream */}
           <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-[#FAF8F4]">
+            {hasMore && (
+              <div className="text-center pb-2">
+                <button
+                  type="button"
+                  onClick={loadOlderMessages}
+                  disabled={loadingOlder}
+                  className="text-xs text-brand-600 hover:text-brand-700 font-semibold bg-white border border-[#E8E4DC] px-3.5 py-1.5 rounded-full shadow-2xs transition-colors disabled:opacity-50"
+                >
+                  {loadingOlder ? 'Loading older messages...' : 'Load older messages'}
+                </button>
+              </div>
+            )}
             {loadingMessages ? (
               <div className="py-12 text-center text-xs text-[#6B6860]">Loading messages...</div>
             ) : messages.length > 0 ? (

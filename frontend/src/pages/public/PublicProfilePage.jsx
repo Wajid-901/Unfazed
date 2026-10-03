@@ -1,15 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, Navigate } from 'react-router-dom';
 import api from '../../api/axios';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
 import { Calendar, Clock, Shield, Heart, Award, Globe, MapPin, CheckCircle, ArrowRight } from 'lucide-react';
+
+const RESERVED_SLUGS = ['login', 'register', 'forgot-password', 'reset-password', 'client', 'privacy', 'terms', 'dashboard', 'api'];
 
 const PublicProfilePage = () => {
   const { slug } = useParams();
   const [therapist, setTherapist] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  if (slug && RESERVED_SLUGS.includes(slug.toLowerCase())) {
+    return <Navigate to={`/${slug}`} replace />;
+  }
 
   useEffect(() => {
     const fetchTherapist = async () => {

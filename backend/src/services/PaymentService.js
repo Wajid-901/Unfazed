@@ -89,7 +89,7 @@ class PaymentService {
   // Generate unique invoice number for the current year
   generateInvoiceNumber() {
     const year = new Date().getFullYear();
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const randomSuffix = Math.floor(100000 + Math.random() * 900000);
     return `INV-${year}-${randomSuffix}`;
   }
 }

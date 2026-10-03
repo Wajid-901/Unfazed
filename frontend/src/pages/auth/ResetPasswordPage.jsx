@@ -9,15 +9,49 @@ const ResetPasswordPage = () => {
   const navigate = useNavigate();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
+  const validatePassword = (val) => {
+    if (!val || val.length < 8) {
+      return 'Password must be at least 8 characters long';
+    }
+    if (!/[A-Za-z]/.test(val) || !/[0-9]/.test(val)) {
+      return 'Password must include at least one letter and one number';
+    }
+    return '';
+  };
+
+  const handleBlur = (field) => {
+    if (field === 'password') {
+      const err = validatePassword(password);
+      setErrors((prev) => (err ? { ...prev, password: err } : { ...prev, password: undefined }));
+    } else if (field === 'confirmPassword') {
+      if (confirmPassword && confirmPassword !== password) {
+        setErrors((prev) => ({ ...prev, confirmPassword: 'Passwords do not match' }));
+      } else {
+        setErrors((prev) => {
+          const next = { ...prev };
+          delete next.confirmPassword;
+          return next;
+        });
+      }
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (password.length < 8) { setError('Password must be at least 8 characters long.'); return; }
-    if (password !== confirmPassword) { setError('Passwords do not match.'); return; }
+    const passErr = validatePassword(password);
+    const confirmErr = password !== confirmPassword ? 'Passwords do not match' : '';
+
+    if (passErr || confirmErr) {
+      setErrors({ password: passErr, confirmPassword: confirmErr });
+      return;
+    }
+
     setLoading(true);
     setError('');
     try {
@@ -73,27 +107,51 @@ const ResetPasswordPage = () => {
                     type={showPassword ? 'text' : 'password'}
                     required
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Min 8 characters"
-                    className="w-full border border-[#E8E4DC] rounded-xl p-2.5 pr-9 focus:ring-2 focus:ring-brand-400 outline-none bg-[#FAF8F4]"
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
+                    }}
+                    onBlur={() => handleBlur('password')}
+                    placeholder="Min 8 chars with letter & number"
+                    className={`w-full border rounded-xl p-2.5 pr-9 focus:ring-2 outline-none bg-[#FAF8F4] ${
+                      errors.password ? 'border-rose-400 focus:ring-rose-300' : 'border-[#E8E4DC] focus:ring-brand-400'
+                    }`}
                   />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3 text-[#9C9890] hover:text-[#6B6860]">
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
+                {errors.password && <p className="text-xs text-rose-600 mt-1">{errors.password}</p>}
               </div>
+
               <div>
                 <label className="block font-semibold text-[#1C1C1A] mb-1">Confirm New Password</label>
                 <input
                   type="password"
                   required
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    if (errors.confirmPassword) setErrors((prev) => ({ ...prev, confirmPassword: undefined }));
+                  }}
+                  onBlur={() => handleBlur('confirmPassword')}
                   placeholder="Re-enter new password"
-                  className="w-full border border-[#E8E4DC] rounded-xl p-2.5 focus:ring-2 focus:ring-brand-400 outline-none bg-[#FAF8F4]"
+                  className={`w-full border rounded-xl p-2.5 focus:ring-2 outline-none bg-[#FAF8F4] ${
+                    errors.confirmPassword ? 'border-rose-400 focus:ring-rose-300' : 'border-[#E8E4DC] focus:ring-brand-400'
+                  }`}
                 />
+                {errors.confirmPassword && <p className="text-xs text-rose-600 mt-1">{errors.confirmPassword}</p>}
               </div>
-              <Button type="submit" variant="primary" loading={loading} className="w-full">Save New Password</Button>
+
+              <Button
+                type="submit"
+                variant="primary"
+                loading={loading}
+                className="w-full"
+                disabled={Boolean(errors.password || errors.confirmPassword)}
+              >
+                Save New Password
+              </Button>
             </form>
           )}
         </div>

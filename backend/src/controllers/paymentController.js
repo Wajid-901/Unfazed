@@ -1,6 +1,9 @@
 const paymentService = require('../services/PaymentService');
 const Payment = require('../models/Payment');
 const Session = require('../models/Session');
+const Client = require('../models/Client');
+const notificationService = require('../services/NotificationService');
+const { invalidateCache } = require('./analyticsController');
 
 // Create Razorpay order for a therapy session
 const createSessionOrder = async (req, res, next) => {
@@ -27,6 +30,13 @@ const createSessionOrder = async (req, res, next) => {
             return res.status(400).json({
                 success: false,
                 message: 'Session has already been paid for'
+            });
+        }
+
+        if (session.clientId._id.toString() !== req.user.id) {
+            return res.status(403).json({
+                success: false,
+                message: 'Forbidden: You can only pay for your own sessions.'
             });
         }
 
@@ -112,18 +122,39 @@ const verifyPayment = async (req, res, next) => {
             });
         }
 
-        const invoiceNumber = paymentService.generateInvoiceNumber();
         payment.paymentId = paymentId;
         payment.signature = signature;
         payment.status = 'captured';
-        payment.invoiceNumber = invoiceNumber;
-        await payment.save();
+
+        let retries = 0;
+        while (retries < 3) {
+            try {
+                payment.invoiceNumber = payment.invoiceNumber || paymentService.generateInvoiceNumber();
+                await payment.save();
+                break;
+            } catch (e) {
+                if (e.code !== 11000 || retries === 2) throw e;
+                payment.invoiceNumber = null;
+                retries++;
+            }
+        }
 
         if (payment.sessionId) {
             await Session.findByIdAndUpdate(payment.sessionId, {
                 paymentStatus: 'paid'
             });
         }
+
+        invalidateCache(payment.therapistId);
+        const clientObj = await Client.findById(payment.clientId).select('name');
+        await notificationService.create({
+            recipientId: payment.therapistId,
+            recipientModel: 'Therapist',
+            title: 'Payment Received',
+            message: `${clientObj?.name || 'A client'} completed payment of ₹${payment.amount}.`,
+            type: 'PAYMENT',
+            metadata: { paymentId: payment._id, amount: payment.amount, invoiceNumber: payment.invoiceNumber }
+        });
 
         res.status(200).json({
             success: true,
@@ -171,13 +202,33 @@ const handleWebhook = async (req, res, next) => {
             if (payment && payment.status !== 'captured') {
                 payment.status = 'captured';
                 payment.paymentId = p.id;
-                payment.invoiceNumber = payment.invoiceNumber || paymentService.generateInvoiceNumber();
-                await payment.save();
+                let hookRetries = 0;
+                while (hookRetries < 3) {
+                    try {
+                        payment.invoiceNumber = payment.invoiceNumber || paymentService.generateInvoiceNumber();
+                        await payment.save();
+                        break;
+                    } catch (e) {
+                        if (e.code !== 11000 || hookRetries === 2) throw e;
+                        payment.invoiceNumber = null;
+                        hookRetries++;
+                    }
+                }
                 if (payment.sessionId) {
                     await Session.findByIdAndUpdate(payment.sessionId, {
                         paymentStatus: 'paid'
                     });
                 }
+                invalidateCache(payment.therapistId);
+                const hookClient = await Client.findById(payment.clientId).select('name');
+                await notificationService.create({
+                    recipientId: payment.therapistId,
+                    recipientModel: 'Therapist',
+                    title: 'Payment Received',
+                    message: `${hookClient?.name || 'A client'} completed payment of ₹${payment.amount}.`,
+                    type: 'PAYMENT',
+                    metadata: { paymentId: payment._id, amount: payment.amount, invoiceNumber: payment.invoiceNumber }
+                });
             }
         } else if (event === 'payment.failed') {
             const p = payload.payment.entity;

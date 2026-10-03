@@ -22,8 +22,8 @@ const paymentLimiter = rateLimit({
     }
 });
 
-// Public booking order creation & client payment verification
-router.post('/create-order', paymentLimiter, createSessionOrder);
+// Client order creation & payment verification
+router.post('/create-order', paymentLimiter, authenticate, authorize('CLIENT'), createSessionOrder);
 router.post('/verify', paymentLimiter, verifyPayment);
 router.post('/webhook', handleWebhook);
 

@@ -219,6 +219,16 @@ const setupClientPassword = async (req, res, next) => {
     client.inviteTokenExpires = undefined;
     await client.save();
 
+    const notificationService = require('../services/NotificationService');
+    await notificationService.create({
+      recipientId: client.therapistId,
+      recipientModel: 'Therapist',
+      title: 'Client Joined Clinic',
+      message: `${client.name} has completed portal setup and joined your clinic.`,
+      type: 'SYSTEM',
+      metadata: { clientId: client._id }
+    });
+
     const { generateAccessToken, generateRefreshToken } = require('../config/jwt');
     const { getRefreshCookieOptions } = require('../config/jwt');
     const ROLES = require('../constants/roles');
@@ -240,6 +250,22 @@ const setupClientPassword = async (req, res, next) => {
   }
 };
 
+const resendVerification = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email address is required' });
+    }
+    const result = await authService.resendVerificationEmail(email);
+    res.status(200).json({
+      success: true,
+      ...result
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -250,5 +276,6 @@ module.exports = {
   forgotPassword,
   resetPassword,
   verifyEmail,
-  setupClientPassword
+  setupClientPassword,
+  resendVerification
 };

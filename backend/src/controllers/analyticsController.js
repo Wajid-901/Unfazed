@@ -3,10 +3,47 @@ const Payment = require('../models/Payment');
 const Client = require('../models/Client');
 const mongoose = require('mongoose');
 
+// In-memory cache for analytics metrics (5 min TTL)
+const analyticsCache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+function getCache(key) {
+  const entry = analyticsCache.get(key);
+  if (entry && entry.expiresAt > Date.now()) return entry.data;
+  analyticsCache.delete(key);
+  return null;
+}
+
+function setCache(key, data) {
+  analyticsCache.set(key, { data, expiresAt: Date.now() + CACHE_TTL });
+}
+
+function invalidateCache(therapistId) {
+  if (!therapistId) return;
+  analyticsCache.delete(`analytics_${therapistId.toString()}`);
+}
+
+const invalidateAnalyticsCacheHandler = async (req, res) => {
+  invalidateCache(req.user.id);
+  res.status(200).json({
+    success: true,
+    message: 'Analytics cache invalidated successfully.'
+  });
+};
+
 // Return full practice analytics: revenue, sessions, client growth
 const getAnalyticsDashboard = async (req, res, next) => {
   try {
     const therapistId = new mongoose.Types.ObjectId(req.user.id);
+    const cacheKey = `analytics_${req.user.id}`;
+
+    const cached = getCache(cacheKey);
+    if (cached) {
+      return res.status(200).json({
+        ...cached,
+        cached: true
+      });
+    }
 
     // 1. Core Summary Metrics
     const [totalRevenueResult, sessionStats, totalClientsCount] = await Promise.all([
@@ -146,7 +183,7 @@ const getAnalyticsDashboard = async (req, res, next) => {
       { name: 'Scheduled', value: 1, color: '#3B82F6' }
     ];
 
-    res.status(200).json({
+    const responsePayload = {
       success: true,
       metrics: {
         totalRevenue,
@@ -161,12 +198,20 @@ const getAnalyticsDashboard = async (req, res, next) => {
       monthlyRevenue,
       clientGrowth,
       sessionDistribution: finalDistribution
-    });
+    };
+
+    setCache(cacheKey, responsePayload);
+
+    res.status(200).json(responsePayload);
   } catch (error) {
     next(error);
   }
 };
 
 module.exports = {
-  getAnalyticsDashboard
+  getAnalyticsDashboard,
+  invalidateAnalyticsCacheHandler,
+  invalidateCache,
+  analyticsCache,
+  CACHE_TTL
 };

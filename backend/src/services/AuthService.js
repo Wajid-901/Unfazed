@@ -4,6 +4,7 @@ const Availability = require('../models/Availability');
 const crypto = require('crypto');
 const ROLES = require('../constants/roles');
 const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = require('../config/jwt');
+const emailService = require('./EmailService');
 
 class AuthService {
   // Generate a unique URL-safe slug from a base name
@@ -18,7 +19,7 @@ class AuthService {
     return slug;
   }
 
-  // Register a new therapist account with default availability
+  // Register a new therapist account with default availability and email verification
   async registerTherapist({ name, email, password, slug }) {
     const existingEmail = await Therapist.findOne({ email: email.toLowerCase() });
     if (existingEmail) {
@@ -40,14 +41,34 @@ class AuthService {
       finalSlug = await this.generateUniqueSlug(name);
     }
 
-    const therapist = await Therapist.create({ name, email: email.toLowerCase(), password, slug: finalSlug });
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationTokenHash = crypto.createHash('sha256').update(verificationToken).digest('hex');
+
+    const therapist = await Therapist.create({
+      name,
+      email: email.toLowerCase(),
+      password,
+      slug: finalSlug,
+      isEmailVerified: false,
+      emailVerificationToken: verificationTokenHash,
+      emailVerificationExpires: Date.now() + 24 * 60 * 60 * 1000 // 24 hours
+    });
     await Availability.create({ therapistId: therapist._id });
+
+    // Send welcome email with verification link
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const verifyLink = `${frontendUrl}/login?verifyToken=${verificationToken}`;
+    await emailService.sendWelcome({
+      toEmail: therapist.email,
+      toName: therapist.name,
+      verifyLink
+    });
 
     const payload = { id: therapist._id.toString(), role: ROLES.THERAPIST, email: therapist.email, name: therapist.name, slug: therapist.slug };
     return { therapist, accessToken: generateAccessToken(payload), refreshToken: generateRefreshToken(payload) };
   }
 
-  // Therapist login — validates password and returns tokens
+  // Therapist login — validates password, enforces email verification, and returns tokens
   async loginTherapist({ email, password }) {
     const therapist = await Therapist.findOne({ email: email.toLowerCase() }).select('+password');
     if (!therapist) {
@@ -56,6 +77,12 @@ class AuthService {
     const isMatch = await therapist.comparePassword(password);
     if (!isMatch) {
       const err = new Error('Invalid email or password'); err.statusCode = 401; throw err;
+    }
+    if (!therapist.isEmailVerified) {
+      const err = new Error('Please verify your email address before logging in. Check your inbox for the verification link.');
+      err.statusCode = 403;
+      err.code = 'EMAIL_NOT_VERIFIED';
+      throw err;
     }
     const payload = { id: therapist._id.toString(), role: ROLES.THERAPIST, email: therapist.email, name: therapist.name, slug: therapist.slug };
     return { therapist: therapist.toJSON(), accessToken: generateAccessToken(payload), refreshToken: generateRefreshToken(payload) };
@@ -99,10 +126,53 @@ class AuthService {
     therapist.resetPasswordExpires = Date.now() + 60 * 60 * 1000; // 1 hour
     await therapist.save();
 
-    return {
-      ...safeMsg,
-      resetToken: process.env.NODE_ENV !== 'production' ? resetToken : undefined
-    };
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const resetLink = `${frontendUrl}/reset-password/${resetToken}`;
+
+    await emailService.sendPasswordReset({
+      toEmail: therapist.email,
+      resetLink
+    });
+
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[Reset Token Dev] ${therapist.email}: ${resetToken}`);
+    }
+
+    return safeMsg;
+  }
+
+  // Resend email verification link
+  async resendVerificationEmail(email) {
+    if (!email) {
+      const err = new Error('Email address is required'); err.statusCode = 400; throw err;
+    }
+    const safeMsg = { message: 'If an account with that email exists and requires verification, a new link has been dispatched.' };
+    const therapist = await Therapist.findOne({ email: email.toLowerCase().trim() });
+    if (!therapist) return safeMsg;
+
+    if (therapist.isEmailVerified) {
+      return { message: 'This account email is already verified. You can sign in.' };
+    }
+
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    therapist.emailVerificationToken = crypto.createHash('sha256').update(verificationToken).digest('hex');
+    therapist.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+    await therapist.save();
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const verifyLink = `${frontendUrl}/login?verifyToken=${verificationToken}`;
+
+    await emailService.sendWelcome({
+      toEmail: therapist.email,
+      toName: therapist.name,
+      verifyLink
+    });
+
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[Verify Token Dev] ${therapist.email}: ${verificationToken}`);
+    }
+
+    return safeMsg;
   }
 
   // Reset password using hashed token — token expires in 1 hour

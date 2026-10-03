@@ -74,6 +74,10 @@ const therapistSchema = new mongoose.Schema(
       type: String,
       default: ''
     },
+    cloudinaryPublicId: {
+      type: String,
+      default: ''
+    },
     clinicAddress: {
       type: String,
       default: 'Online / Telehealth'

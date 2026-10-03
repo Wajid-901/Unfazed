@@ -1,7 +1,11 @@
 const { verifyAccessToken } = require('../config/jwt');
 const Chat = require('../models/Chat');
 
+let ioInstance = null;
+
 const initSocket = (io) => {
+  ioInstance = io;
+
   // Authentication middleware for Socket.io
   io.use((socket, next) => {
     try {
@@ -91,4 +95,12 @@ const initSocket = (io) => {
   });
 };
 
+const sendSocketNotification = (recipientId, notification) => {
+  if (ioInstance && recipientId) {
+    ioInstance.to(recipientId.toString()).emit('new_notification', notification);
+  }
+};
+
 module.exports = initSocket;
+module.exports.initSocket = initSocket;
+module.exports.sendSocketNotification = sendSocketNotification;

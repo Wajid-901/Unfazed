@@ -6,13 +6,32 @@ import { Mail, ArrowLeft, CheckCircle2, AlertCircle, KeyRound } from 'lucide-rea
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [devResetToken, setDevResetToken] = useState(null);
   const [error, setError] = useState('');
 
+  const validateEmail = (val) => {
+    if (!val || !val.trim()) return 'Email address is required';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim())) {
+      return 'Please enter a valid email address';
+    }
+    return '';
+  };
+
+  const handleBlur = () => {
+    setEmailError(validateEmail(email));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const err = validateEmail(email);
+    if (err) {
+      setEmailError(err);
+      return;
+    }
+
     setLoading(true);
     setError('');
     try {
@@ -76,14 +95,29 @@ const ForgotPasswordPage = () => {
                     type="email"
                     required
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (emailError) setEmailError('');
+                    }}
+                    onBlur={handleBlur}
                     placeholder="doctor@example.com"
-                    className="w-full text-xs border border-[#E8E4DC] rounded-xl p-2.5 pl-9 focus:ring-2 focus:ring-brand-400 outline-none bg-[#FAF8F4]"
+                    className={`w-full text-xs border rounded-xl p-2.5 pl-9 focus:ring-2 outline-none bg-[#FAF8F4] ${
+                      emailError ? 'border-rose-400 focus:ring-rose-300' : 'border-[#E8E4DC] focus:ring-brand-400'
+                    }`}
                   />
                   <Mail className="w-4 h-4 text-[#9C9890] absolute left-3 top-3" />
                 </div>
+                {emailError && <p className="text-xs text-rose-600 mt-1">{emailError}</p>}
               </div>
-              <Button type="submit" variant="primary" loading={loading} className="w-full">Send Reset Link</Button>
+              <Button
+                type="submit"
+                variant="primary"
+                loading={loading}
+                className="w-full"
+                disabled={Boolean(emailError)}
+              >
+                Send Reset Link
+              </Button>
               <div className="text-center pt-2">
                 <Link to="/login" className="inline-flex items-center gap-1 text-xs font-semibold text-[#6B6860] hover:text-[#1C1C1A]">
                   <ArrowLeft className="w-3.5 h-3.5" /> Back to Sign In
