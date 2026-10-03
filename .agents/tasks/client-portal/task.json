@@ -1,7 +1,0 @@
-{
-  "task_id": "task-client-portal",
-  "task_description": "Build a complete Unfazed Client Portal: fix the blank-page crash in ClientLayout, add a full sidebar layout, create five client pages (Dashboard, Bookings, Chat, Payments, Notes, Profile), wire all routes, and add four missing backend endpoints (GET/PUT /api/v1/client/profile, GET /api/v1/sessions/mine, GET /api/v1/payments/mine).",
-  "status": "pending",
-  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
-  "blocked_reason": null
-}
