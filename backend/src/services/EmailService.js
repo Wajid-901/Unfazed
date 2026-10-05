@@ -33,8 +33,13 @@ class EmailService {
     }
 
     if (!this.isConfigured() || !this.client) {
-      console.log(`[Email Dev Fallback] To: ${normalizedTo} | Subject: "${subject}"`);
-      return { success: true, simulated: true, id: `dev_email_${Date.now()}` };
+      console.warn(
+        `[EmailService] ⚠️  Brevo is NOT configured — email will NOT be sent!\n` +
+        `  To: ${normalizedTo} | Subject: "${subject}"\n` +
+        `  BREVO_API_KEY present: ${Boolean(this.apiKey)} | Key starts with xkeysib-: ${this.apiKey?.trim()?.startsWith('xkeysib-') || false}\n` +
+        `  Fix: Set a valid BREVO_API_KEY in your Render environment variables.`
+      );
+      return { success: false, simulated: true, error: 'Email service not configured (missing or invalid BREVO_API_KEY)' };
     }
 
     try {
@@ -54,8 +59,9 @@ class EmailService {
       const messageId = response?.data?.messageId || response?.messageId || `brevo_${Date.now()}`;
       return { success: true, id: messageId };
     } catch (err) {
-      console.error('[EmailService] Failed to send email via Brevo:', err.message);
-      return { success: false, error: err.message };
+      const errBody = err?.body || err?.response?.body || err?.message || err;
+      console.error('[EmailService] Failed to send email via Brevo:', JSON.stringify(errBody, null, 2));
+      return { success: false, error: typeof errBody === 'string' ? errBody : err.message };
     }
   }
 

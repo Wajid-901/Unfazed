@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import api from '../../api/axios';
 import Button from '../../components/common/Button';
-import { User, Lock, Mail, Globe, AlertCircle, CheckCircle2, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { User, Lock, Mail, Globe, AlertCircle, CheckCircle2, CheckCircle, Eye, EyeOff, RefreshCw } from 'lucide-react';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -13,6 +14,8 @@ const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [registeredSuccess, setRegisteredSuccess] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendStatus, setResendStatus] = useState('');
 
   const validateField = (name, value) => {
     let err = '';
@@ -119,13 +122,43 @@ const RegisterPage = () => {
               <p className="text-xs text-[#6B6860] leading-relaxed">
                 We've sent a verification link to <strong>{formData.email}</strong>. Please verify your email address to sign in and activate your clinic.
               </p>
-              <div className="pt-2">
+
+              {resendStatus && (
+                <div className={`rounded-lg p-3 text-xs flex items-center justify-center gap-2 ${
+                  resendStatus.includes('sent') ? 'bg-emerald-50 border border-emerald-200 text-emerald-700' : 'bg-rose-50 border border-rose-200 text-rose-700'
+                }`}>
+                  {resendStatus.includes('sent') ? <CheckCircle className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                  {resendStatus}
+                </div>
+              )}
+
+              <div className="flex flex-col gap-2 pt-2">
                 <Link
                   to="/login"
                   className="inline-block px-6 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold transition-colors"
                 >
                   Proceed to Sign In
                 </Link>
+                <button
+                  type="button"
+                  disabled={resending}
+                  onClick={async () => {
+                    setResending(true);
+                    setResendStatus('');
+                    try {
+                      const { data } = await api.post('/auth/resend-verification', { email: formData.email });
+                      setResendStatus(data.message || 'Verification email sent! Check your inbox.');
+                    } catch (err) {
+                      setResendStatus(err.response?.data?.message || 'Failed to resend. Please try again.');
+                    } finally {
+                      setResending(false);
+                    }
+                  }}
+                  className="inline-flex items-center justify-center gap-1.5 px-6 py-2.5 rounded-xl border border-[#E8E4DC] bg-[#FAF8F4] hover:bg-[#F0EDE6] text-xs font-semibold text-[#6B6860] transition-colors disabled:opacity-50"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${resending ? 'animate-spin' : ''}`} />
+                  {resending ? 'Sending...' : "Didn't receive it? Resend Email"}
+                </button>
               </div>
             </div>
           ) : (
