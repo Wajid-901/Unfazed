@@ -58,11 +58,13 @@ class AuthService {
     // Send welcome email with verification link
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const verifyLink = `${frontendUrl}/login?verifyToken=${verificationToken}`;
-    await emailService.sendWelcome({
+    const emailResult = await emailService.sendWelcome({
       toEmail: therapist.email,
       toName: therapist.name,
       verifyLink
     });
+    console.log(`[Auth] Welcome email result for ${therapist.email}:`, JSON.stringify(emailResult));
+    console.log(`[Auth] Verify link: ${verifyLink}`);
 
     const payload = { id: therapist._id.toString(), role: ROLES.THERAPIST, email: therapist.email, name: therapist.name, slug: therapist.slug };
     return { therapist, accessToken: generateAccessToken(payload), refreshToken: generateRefreshToken(payload) };
@@ -162,15 +164,13 @@ class AuthService {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const verifyLink = `${frontendUrl}/login?verifyToken=${verificationToken}`;
 
-    await emailService.sendWelcome({
+    const emailResult = await emailService.sendWelcome({
       toEmail: therapist.email,
       toName: therapist.name,
       verifyLink
     });
-
-    if (process.env.NODE_ENV !== 'production') {
-      console.log(`[Verify Token Dev] ${therapist.email}: ${verificationToken}`);
-    }
+    console.log(`[Auth] Resend verification email result for ${therapist.email}:`, JSON.stringify(emailResult));
+    console.log(`[Auth] Verify link: ${verifyLink}`);
 
     return safeMsg;
   }
