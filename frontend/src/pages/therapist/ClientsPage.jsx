@@ -27,6 +27,7 @@ const ClientsPage = () => {
   // Per-row copy invite link state
   const [copiedFor, setCopiedFor] = useState(null);
   const [resendingFor, setResendingFor] = useState(null);
+  const [copyingFor, setCopyingFor] = useState(null);
 
   // Edit client modal state
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -96,7 +97,7 @@ const ClientsPage = () => {
 
   // Copy invite link — generates fresh link without sending email
   const handleCopyInviteLink = async (clientId) => {
-    setResendingFor(clientId);
+    setCopyingFor(clientId);
     try {
       const { data } = await api.get(`/clients/${clientId}/invite-link`);
       if (data.inviteLink) {
@@ -107,7 +108,7 @@ const ClientsPage = () => {
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to get invite link.');
     } finally {
-      setResendingFor(null);
+      setCopyingFor(null);
     }
   };
 
@@ -259,10 +260,10 @@ const ClientsPage = () => {
                           {/* Copy invite link — generates fresh token, no email sent */}
                           <button
                             onClick={() => handleCopyInviteLink(c._id)}
-                            disabled={resendingFor === c._id}
+                            disabled={copyingFor === c._id}
                             className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-md hover:bg-amber-100 transition-colors disabled:opacity-60"
                           >
-                            {resendingFor === c._id
+                            {copyingFor === c._id
                               ? <><RefreshCw className="w-3 h-3 animate-spin" /> Generating…</>
                               : copiedFor === c._id
                               ? <><Check className="w-3 h-3 text-emerald-600" /> Link Copied!</>

@@ -212,11 +212,18 @@ const resendInvite = async (req, res, next) => {
         const client = await Client.findOne({
             _id: id,
             therapistId: req.user.id
-        });
+        }).select('+password');
         if (!client) {
             return res.status(404).json({
                 success: false,
                 message: 'Client not found'
+            });
+        }
+
+        if (client.password) {
+            return res.status(400).json({
+                success: false,
+                message: 'This client has already activated their account.'
             });
         }
 
