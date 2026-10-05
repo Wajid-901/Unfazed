@@ -28,6 +28,12 @@ const PublicLayout = () => {
           {/* Desktop nav links */}
           <div className="hidden md:flex items-center gap-3">
             <Link
+              to="/therapists"
+              className="text-xs font-semibold text-[#6B6860] hover:text-accent-500 px-3 py-1.5 transition-colors"
+            >
+              Find a Therapist
+            </Link>
+            <Link
               to="/login"
               className="text-xs font-semibold text-[#6B6860] hover:text-brand-500 px-3 py-1.5 transition-colors"
             >
@@ -54,6 +60,13 @@ const PublicLayout = () => {
         {/* Mobile nav drawer */}
         {mobileNavOpen && (
           <div className="md:hidden bg-white border-t border-[#E8E4DC] px-4 py-4 flex flex-col gap-3">
+            <Link
+              to="/therapists"
+              className="text-sm font-semibold text-accent-600 hover:text-accent-700 py-2 border-b border-[#E8E4DC]"
+              onClick={() => setMobileNavOpen(false)}
+            >
+              Find a Therapist
+            </Link>
             <Link
               to="/login"
               className="text-sm font-semibold text-[#6B6860] hover:text-brand-500 py-2 border-b border-[#E8E4DC]"

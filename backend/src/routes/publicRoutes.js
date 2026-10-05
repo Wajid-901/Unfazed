@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const rateLimit = require('express-rate-limit');
 const {
+  getPublicTherapists,
   getPublicProfile,
   getPublicSlots,
   publicBookSession,
@@ -18,6 +19,7 @@ const bookingLimiter = rateLimit({
   }
 });
 
+router.get('/therapists', getPublicTherapists);
 router.get('/therapist/:slug', getPublicProfile);
 router.get('/therapist/:slug/slots', getPublicSlots);
 router.post('/therapist/:slug/book', bookingLimiter, publicBookSession);

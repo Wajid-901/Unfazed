@@ -1,4 +1,5 @@
 const Therapist = require('../models/Therapist');
+const TherapistReview = require('../models/TherapistReview');
 const Availability = require('../models/Availability');
 const Session = require('../models/Session');
 const Client = require('../models/Client');
@@ -243,7 +244,126 @@ const submitFeedback = async (req, res, next) => {
   }
 };
 
+// Public therapist directory — search, filter, paginate
+const getPublicTherapists = async (req, res, next) => {
+  try {
+    const {
+      q,
+      specialization,
+      language,
+      minRate,
+      maxRate,
+      minExperience,
+      sort = 'newest',
+      page = 1,
+      limit = 12
+    } = req.query;
+
+    // Build filter — only show verified therapists
+    const filter = { isEmailVerified: true };
+
+    // Text search across name, title, bio
+    if (q && q.trim()) {
+      const regex = new RegExp(q.trim(), 'i');
+      filter.$or = [
+        { name: regex },
+        { title: regex },
+        { bio: regex },
+        { specializations: regex }
+      ];
+    }
+
+    // Specialization filter
+    if (specialization) {
+      filter.specializations = { $in: [new RegExp(specialization.trim(), 'i')] };
+    }
+
+    // Language filter
+    if (language) {
+      filter.languages = { $in: [new RegExp(language.trim(), 'i')] };
+    }
+
+    // Rate range filter
+    if (minRate || maxRate) {
+      filter.hourlyRate = {};
+      if (minRate) filter.hourlyRate.$gte = Number(minRate);
+      if (maxRate) filter.hourlyRate.$lte = Number(maxRate);
+    }
+
+    // Experience filter
+    if (minExperience) {
+      filter.experienceYears = { $gte: Number(minExperience) };
+    }
+
+    // Sorting
+    let sortOption = { createdAt: -1 }; // newest
+    if (sort === 'rate_low') sortOption = { hourlyRate: 1 };
+    else if (sort === 'rate_high') sortOption = { hourlyRate: -1 };
+    else if (sort === 'experience') sortOption = { experienceYears: -1 };
+    else if (sort === 'name') sortOption = { name: 1 };
+
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit)));
+    const skip = (pageNum - 1) * limitNum;
+
+    const [therapists, total] = await Promise.all([
+      Therapist.find(filter)
+        .select('name title slug bio specializations languages hourlyRate currency experienceYears qualification profileImageUrl clinicAddress createdAt')
+        .sort(sortOption)
+        .skip(skip)
+        .limit(limitNum)
+        .lean(),
+      Therapist.countDocuments(filter)
+    ]);
+
+    // Aggregate ratings for returned therapists
+    const therapistIds = therapists.map((t) => t._id);
+    const ratings = await TherapistReview.aggregate([
+      { $match: { therapistId: { $in: therapistIds }, status: 'approved' } },
+      {
+        $group: {
+          _id: '$therapistId',
+          avgRating: { $avg: '$rating' },
+          reviewsCount: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const ratingsMap = {};
+    ratings.forEach((r) => {
+      ratingsMap[r._id.toString()] = {
+        rating: Math.round(r.avgRating * 10) / 10,
+        reviewsCount: r.reviewsCount
+      };
+    });
+
+    // Enrich therapist data with ratings
+    const enriched = therapists.map((t) => {
+      const ratingData = ratingsMap[t._id.toString()] || { rating: 0, reviewsCount: 0 };
+      return {
+        ...t,
+        rating: ratingData.rating,
+        reviewsCount: ratingData.reviewsCount
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      therapists: enriched,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        pages: Math.ceil(total / limitNum)
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
+  getPublicTherapists,
   getPublicProfile,
   getPublicSlots,
   publicBookSession,

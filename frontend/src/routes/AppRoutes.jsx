@@ -18,6 +18,7 @@ import PrivacyPolicyPage from '../pages/public/PrivacyPolicyPage';
 import TermsPage from '../pages/public/TermsPage';
 import PublicProfilePage from '../pages/public/PublicProfilePage';
 import BookingPage from '../pages/public/BookingPage';
+import TherapistsPage from '../pages/public/TherapistsPage';
 
 // Therapist Pages
 import DashboardPage from '../pages/therapist/DashboardPage';
@@ -68,6 +69,7 @@ const AppRoutes = () => {
         <Route path="/client/setup-password" element={<SetupPasswordPage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/terms" element={<TermsPage />} />
+        <Route path="/therapists" element={<TherapistsPage />} />
         <Route path="/:slug" element={<PublicProfilePage />} />
         <Route path="/:slug/book" element={<BookingPage />} />
       </Route>
