@@ -56,7 +56,7 @@ class AuthService {
     await Availability.create({ therapistId: therapist._id });
 
     // Send welcome email with verification link
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/+$/, '');
     const verifyLink = `${frontendUrl}/login?verifyToken=${verificationToken}`;
     const emailResult = await emailService.sendWelcome({
       toEmail: therapist.email,
@@ -128,7 +128,7 @@ class AuthService {
     therapist.resetPasswordExpires = Date.now() + 60 * 60 * 1000; // 1 hour
     await therapist.save();
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/+$/, '');
     const resetLink = `${frontendUrl}/reset-password/${resetToken}`;
 
     await emailService.sendPasswordReset({
@@ -161,7 +161,7 @@ class AuthService {
     therapist.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
     await therapist.save();
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/+$/, '');
     const verifyLink = `${frontendUrl}/login?verifyToken=${verificationToken}`;
 
     const emailResult = await emailService.sendWelcome({
