@@ -137,6 +137,7 @@ const createClient = async (req, res, next) => {
             notes
         } = req.body;
 
+        // Check for duplicate client email within this therapist's practice
         const existingClient = await Client.findOne({
             therapistId: req.user.id,
             email: email.toLowerCase().trim()
@@ -146,6 +147,15 @@ const createClient = async (req, res, next) => {
             return res.status(409).json({
                 success: false,
                 message: 'A client with this email already exists in your practice.'
+            });
+        }
+
+        // Step 1: Prevent a therapist's own email from being added as a client
+        const therapistWithEmail = await Therapist.findOne({ email: email.toLowerCase().trim() });
+        if (therapistWithEmail) {
+            return res.status(409).json({
+                success: false,
+                message: 'This email belongs to a registered therapist and cannot be used for a client account.'
             });
         }
 
@@ -181,11 +191,12 @@ const createClient = async (req, res, next) => {
             inviteLink
         });
 
+        // Step 2: Always return inviteLink
         res.status(201).json({
             success: true,
             message: 'Client added successfully and invitation emailed.',
             client,
-            inviteLink: process.env.NODE_ENV !== 'production' ? inviteLink : undefined
+            inviteLink: inviteLink
         });
     } catch (error) {
         next(error);
@@ -228,16 +239,37 @@ const resendInvite = async (req, res, next) => {
             inviteLink
         });
 
+        // Step 2: Always return inviteLink
         res.status(200).json({
             success: true,
             message: 'Invitation link resent to client email.',
-            inviteLink: process.env.NODE_ENV !== 'production' ? inviteLink : undefined
+            inviteLink: inviteLink
         });
     } catch (error) {
         next(error);
     }
 };
 
+// Step 3: Get (or regenerate) invite link without sending email
+const getInviteLink = async (req, res, next) => {
+    try {
+        const client = await Client.findOne({ _id: req.params.id, therapistId: req.user.id }).select('+password +inviteToken +inviteTokenExpires');
+        if (!client) return res.status(404).json({ success: false, message: 'Client not found' });
+        if (client.password) return res.status(400).json({ success: false, message: 'Client has already activated their account.' });
+
+        const rawToken = crypto.randomBytes(32).toString('hex');
+        client.inviteToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+        client.inviteTokenExpires = Date.now() + 24 * 60 * 60 * 1000;
+        await client.save();
+
+        const inviteLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/client/setup-password?token=${rawToken}`;
+        res.json({ success: true, inviteLink });
+    } catch (err) {
+        next(err);
+    }
+};
+
+// Step 4: Update client — supports email editing with validation
 const updateClient = async (req, res, next) => {
     try {
         const {
@@ -250,18 +282,57 @@ const updateClient = async (req, res, next) => {
             status,
             intakeData,
             gender,
-            dateOfBirth
+            dateOfBirth,
+            email
         } = req.body;
 
+        // Select +password to check activation status for email-change guard
         const client = await Client.findOne({
             _id: id,
             therapistId: req.user.id
-        });
+        }).select('+password');
         if (!client) {
             return res.status(404).json({
                 success: false,
                 message: 'Client not found'
             });
+        }
+
+        // Handle email change with validation
+        let inviteLinkForResponse;
+        if (email !== undefined && email !== '') {
+            const normalizedEmail = email.toLowerCase().trim();
+
+            if (client.password) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Cannot change email of an activated client account.'
+                });
+            }
+
+            const emailTakenByClient = await Client.findOne({ therapistId: req.user.id, email: normalizedEmail, _id: { $ne: client._id } });
+            if (emailTakenByClient) {
+                return res.status(409).json({
+                    success: false,
+                    message: 'A client with this email already exists in your practice.'
+                });
+            }
+
+            const emailTakenByTherapist = await Therapist.findOne({ email: normalizedEmail });
+            if (emailTakenByTherapist) {
+                return res.status(409).json({
+                    success: false,
+                    message: 'This email belongs to a registered therapist and cannot be used for a client account.'
+                });
+            }
+
+            client.email = normalizedEmail;
+            // Regenerate invite token so the new email address gets a fresh invite
+            const rawToken = crypto.randomBytes(32).toString('hex');
+            client.inviteToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+            client.inviteTokenExpires = Date.now() + 24 * 60 * 60 * 1000;
+            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+            inviteLinkForResponse = `${frontendUrl}/client/setup-password?token=${rawToken}`;
         }
 
         if (name) client.name = name.trim();
@@ -280,7 +351,8 @@ const updateClient = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: 'Client updated successfully',
-            client
+            client,
+            inviteLink: inviteLinkForResponse
         });
     } catch (error) {
         next(error);
@@ -387,6 +459,7 @@ module.exports = {
     updateClient,
     archiveClient,
     resendInvite,
+    getInviteLink,
     getMyProfile,
     updateMyProfile
 };

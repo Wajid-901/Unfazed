@@ -13,6 +13,7 @@ const {
     updateClient,
     archiveClient,
     resendInvite,
+    getInviteLink,
     getMyProfile,
     updateMyProfile
 } = require('../controllers/clientController');
@@ -33,9 +34,13 @@ router.put('/profile', authenticate, authorize('CLIENT'), updateMyProfile);
 // THERAPIST-only routes
 router.get('/', authenticate, authorize('THERAPIST'), getClients);
 router.post('/', authenticate, authorize('THERAPIST'), requireClientQuota, createClient);
+
+// Specific sub-resource routes must come BEFORE bare /:id to avoid wildcard collision
+router.post('/:id/resend-invite', authenticate, authorize('THERAPIST'), inviteLimiter, resendInvite);
+router.get('/:id/invite-link', authenticate, authorize('THERAPIST'), inviteLimiter, getInviteLink);
+
 router.get('/:id', authenticate, authorize('THERAPIST'), getClientById);
 router.put('/:id', authenticate, authorize('THERAPIST'), updateClient);
 router.delete('/:id', authenticate, authorize('THERAPIST'), archiveClient);
-router.post('/:id/resend-invite', authenticate, authorize('THERAPIST'), inviteLimiter, resendInvite);
 
 module.exports = router;
