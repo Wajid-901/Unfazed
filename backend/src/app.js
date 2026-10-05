@@ -21,6 +21,10 @@ const notificationRoutes = require('./routes/notificationRoutes');
 
 const app = express();
 
+// Trust first proxy (Render, Vercel, etc.) so express-rate-limit
+// reads the real client IP from X-Forwarded-For instead of crashing.
+app.set('trust proxy', 1);
+
 // Security HTTP headers
 app.use(
   helmet({
