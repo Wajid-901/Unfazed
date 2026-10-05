@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../../components/common/Button';
-import { User, Lock, Mail, Globe, AlertCircle, CheckCircle2, CheckCircle } from 'lucide-react';
+import { User, Lock, Mail, Globe, AlertCircle, CheckCircle2, CheckCircle, Eye, EyeOff } from 'lucide-react';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -10,6 +10,7 @@ const RegisterPage = () => {
   const [formData, setFormData] = useState({ name: '', email: '', password: '', slug: '' });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [registeredSuccess, setRegisteredSuccess] = useState(false);
 
@@ -188,17 +189,24 @@ const RegisterPage = () => {
                       <Lock className="h-4 w-4" />
                     </div>
                     <input
-                      type="password"
+                      type={showPassword ? 'text' : 'password'}
                       name="password"
                       required
                       value={formData.password}
                       onChange={handleChange}
                       onBlur={handleBlur}
                       placeholder="Min 8 chars with letter & number"
-                      className={`block w-full pl-9 pr-3 py-2 text-sm border rounded-lg focus:ring-2 outline-none bg-[#FAF8F4] ${
+                      className={`block w-full pl-9 pr-10 py-2 text-sm border rounded-lg focus:ring-2 outline-none bg-[#FAF8F4] ${
                         errors.password ? 'border-rose-400 focus:ring-rose-300' : 'border-[#E8E4DC] focus:ring-brand-400'
                       }`}
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#9C9890] hover:text-[#6B6860] transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
                   </div>
                   {errors.password ? (
                     <p className="text-xs text-rose-600 mt-1">{errors.password}</p>
