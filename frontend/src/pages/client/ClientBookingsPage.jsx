@@ -50,16 +50,21 @@ const ClientBookingsPage = () => {
   }, []);
 
   const handleCancelSession = async (sessionId) => {
-    const confirmed = window.confirm('Are you sure you want to cancel this session?');
+    const isPendingSession = sessions.find((s) => s._id === sessionId)?.status === 'pending_approval';
+    const confirmed = window.confirm(
+      isPendingSession
+        ? 'Are you sure you want to withdraw this booking request?'
+        : 'Are you sure you want to cancel this session?'
+    );
     if (!confirmed) return;
 
     setCancellingId(sessionId);
     try {
       const { data } = await api.patch(`/sessions/${sessionId}/cancel`, {
-        reason: 'Cancelled by client via portal'
+        reason: isPendingSession ? 'Booking request withdrawn by client' : 'Cancelled by client via portal'
       });
       if (data.success) {
-        toast.success('Session cancelled successfully.');
+        toast.success(isPendingSession ? 'Booking request withdrawn.' : 'Session cancelled successfully.');
         setSessions((prev) =>
           prev.map((s) => (s._id === sessionId ? { ...s, status: 'cancelled', cancelledBy: 'client' } : s))
         );
@@ -114,7 +119,7 @@ const ClientBookingsPage = () => {
             const canPay =
               session.paymentStatus === 'pending' && session.status === 'scheduled';
             const canCancel =
-              session.status === 'scheduled';
+              session.status === 'scheduled' || session.status === 'pending_approval';
             const isPending = session.status === 'pending_approval';
 
             return (
@@ -191,7 +196,9 @@ const ClientBookingsPage = () => {
                         className="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-50"
                       >
                         <XCircle className="w-3.5 h-3.5" />
-                        {cancellingId === session._id ? 'Cancelling...' : 'Cancel'}
+                        {cancellingId === session._id
+                          ? (isPending ? 'Withdrawing...' : 'Cancelling...')
+                          : (isPending ? 'Withdraw Request' : 'Cancel')}
                       </button>
                     )}
                   </div>

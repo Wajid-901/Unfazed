@@ -12,6 +12,7 @@ const LoginPage = () => {
   const { login } = useAuth();
 
   const redirectTo = location.state?.redirectTo;
+  const redirectMessage = location.state?.message;
 
   const [isClient, setIsClient] = useState(redirectTo?.startsWith('/client') ? true : false);
   const [email, setEmail] = useState('');
@@ -154,6 +155,13 @@ const LoginPage = () => {
 
       <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-6 shadow-sm border border-[#E8E4DC] sm:rounded-2xl sm:px-10">
+          {redirectMessage && (
+            <div className="mb-5 rounded-lg bg-blue-50 border border-blue-200 p-3.5 flex items-start gap-2.5 text-xs text-blue-800">
+              <CheckCircle className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+              <span>{redirectMessage}</span>
+            </div>
+          )}
+
           {success && (
             <div className="mb-5 rounded-lg bg-emerald-50 border border-emerald-200 p-3.5 flex items-start gap-2.5 text-xs text-emerald-800">
               <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />

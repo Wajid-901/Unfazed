@@ -254,10 +254,10 @@ const cancelClientSession = async (req, res, next) => {
             });
         }
 
-        if (session.status !== 'scheduled') {
+        if (session.status !== 'scheduled' && session.status !== 'pending_approval') {
             return res.status(400).json({
                 success: false,
-                message: 'Only scheduled sessions can be cancelled'
+                message: 'Only scheduled or pending sessions can be cancelled'
             });
         }
 
