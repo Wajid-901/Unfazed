@@ -150,7 +150,7 @@ const createClient = async (req, res, next) => {
             });
         }
 
-        // Step 1: Prevent a therapist's own email from being added as a client
+        // Block therapist emails from being used as client accounts
         const therapistWithEmail = await Therapist.findOne({ email: email.toLowerCase().trim() });
         if (therapistWithEmail) {
             return res.status(409).json({
@@ -191,7 +191,6 @@ const createClient = async (req, res, next) => {
             inviteLink
         });
 
-        // Step 2: Always return inviteLink
         res.status(201).json({
             success: true,
             message: 'Client added successfully and invitation emailed.',
@@ -246,7 +245,6 @@ const resendInvite = async (req, res, next) => {
             inviteLink
         });
 
-        // Step 2: Always return inviteLink
         res.status(200).json({
             success: true,
             message: 'Invitation link resent to client email.',
@@ -257,7 +255,7 @@ const resendInvite = async (req, res, next) => {
     }
 };
 
-// Step 3: Get (or regenerate) invite link without sending email
+// Regenerate invite link without sending email (therapist copy-link action)
 const getInviteLink = async (req, res, next) => {
     try {
         const client = await Client.findOne({ _id: req.params.id, therapistId: req.user.id }).select('+password +inviteToken +inviteTokenExpires');
@@ -276,7 +274,7 @@ const getInviteLink = async (req, res, next) => {
     }
 };
 
-// Step 4: Update client — supports email editing with validation
+// Update client — supports email editing with validation
 const updateClient = async (req, res, next) => {
     try {
         const {
