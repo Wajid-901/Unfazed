@@ -5,7 +5,7 @@ import api from '../../api/axios';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
 import Modal from '../../components/common/Modal';
-import { Users, Search, Plus, ArrowUpRight, Link2, Check, RefreshCw, Copy, Pencil } from 'lucide-react';
+import { Users, Search, Plus, ArrowUpRight, Link2, Check, RefreshCw, Copy, Pencil, Trash2 } from 'lucide-react';
 
 const TAG_OPTIONS = ['New Client', 'Active', 'Lead', 'Anxiety', 'Depression', 'Couples', 'Trauma'];
 
@@ -37,6 +37,7 @@ const ClientsPage = () => {
   const [editInviteLink, setEditInviteLink] = useState('');
   const [editLoading, setEditLoading] = useState(false);
   const [editLinkCopied, setEditLinkCopied] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const fetchClients = async () => {
     try {
@@ -128,6 +129,7 @@ const ClientsPage = () => {
     });
     setEditInviteLink('');
     setEditLinkCopied(false);
+    setShowDeleteConfirm(false);
     setIsEditModalOpen(true);
   };
 
@@ -135,6 +137,7 @@ const ClientsPage = () => {
     setIsEditModalOpen(false);
     setEditingClient(null);
     setEditInviteLink('');
+    setShowDeleteConfirm(false);
   };
 
   const handleEditSubmit = async (e) => {
@@ -153,6 +156,18 @@ const ClientsPage = () => {
       toast.error(err.response?.data?.message || 'Failed to update client.');
     } finally {
       setEditLoading(false);
+    }
+  };
+
+  const handleDeleteClient = async () => {
+    try {
+      await api.delete(`/clients/${editingClient._id}`);
+      closeEditModal();
+      fetchClients();
+      toast.success('Client deleted successfully.');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete client.');
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -454,6 +469,28 @@ const ClientsPage = () => {
             </div>
             <Button onClick={closeEditModal} className="w-full" variant="secondary">Done</Button>
           </div>
+        ) : showDeleteConfirm ? (
+          <div className="space-y-5">
+            <div className="flex flex-col items-center text-center gap-3 py-4">
+              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                <Trash2 className="w-6 h-6 text-red-600" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-800">Delete {editingClient?.name}?</p>
+                <p className="text-xs text-slate-500 mt-1">This action cannot be undone.</p>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
+              <button
+                type="button"
+                onClick={handleDeleteClient}
+                className="px-4 py-2 text-xs font-semibold rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
+              >
+                Confirm Delete
+              </button>
+            </div>
+          </div>
         ) : (
           <form onSubmit={handleEditSubmit} className="space-y-4">
             <div>
@@ -551,9 +588,18 @@ const ClientsPage = () => {
                 className="w-full text-sm border border-[#E8E4DC] rounded-lg p-2 focus:ring-2 focus:ring-brand-400 outline-none bg-[#FAF8F4]"
               />
             </div>
-            <div className="pt-2 flex justify-end gap-2">
-              <Button variant="secondary" onClick={closeEditModal}>Cancel</Button>
-              <Button type="submit" variant="primary" loading={editLoading}>Save Changes</Button>
+            <div className="pt-2 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+              >
+                <Trash2 className="w-3.5 h-3.5" /> Delete Client
+              </button>
+              <div className="flex gap-2">
+                <Button variant="secondary" onClick={closeEditModal}>Cancel</Button>
+                <Button type="submit" variant="primary" loading={editLoading}>Save Changes</Button>
+              </div>
             </div>
           </form>
         )}
