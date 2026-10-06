@@ -303,6 +303,7 @@ const approveSession = async (req, res, next) => {
         await session.save();
 
         const client = await Client.findById(session.clientId).select('+password +inviteToken +inviteTokenExpires');
+        let emailSent = false;
         if (client && !client.password) {
             const rawToken = crypto.randomBytes(32).toString('hex');
             client.inviteToken = crypto.createHash('sha256').update(rawToken).digest('hex');
@@ -313,17 +314,25 @@ const approveSession = async (req, res, next) => {
             const inviteLink = `${frontendUrl}/client/setup-password?token=${rawToken}`;
 
             const therapist = await Therapist.findById(req.user.id).select('name');
-            await emailService.sendClientInvite({
+            const emailResult = await emailService.sendClientInvite({
                 toEmail: client.email,
                 toName: client.name,
                 therapistName: therapist?.name || 'Your therapist',
                 inviteLink
             });
+            emailSent = emailResult?.success === true;
         }
 
         invalidateCache(req.user.id);
 
-        res.status(200).json({ success: true, message: 'Session approved and invite sent to client.', session });
+        return res.status(200).json({
+            success: true,
+            message: emailSent
+                ? 'Session approved and activation email sent to client.'
+                : 'Session approved. Note: activation email could not be sent — please check your email service configuration.',
+            emailSent,
+            session
+        });
     } catch (error) {
         next(error);
     }

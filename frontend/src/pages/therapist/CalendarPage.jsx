@@ -56,8 +56,12 @@ const CalendarPage = () => {
   const handleApprove = async (sessionId) => {
     setApprovingId(sessionId);
     try {
-      await api.patch(`/sessions/${sessionId}/approve`);
-      toast.success('Session approved — activation link sent to client.');
+      const { data } = await api.patch(`/sessions/${sessionId}/approve`);
+      if (data.emailSent === false) {
+        toast.warning('Session approved, but the activation email could not be sent. Check your email configuration.');
+      } else {
+        toast.success('Session approved — activation link sent to client.');
+      }
       fetchData();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to approve session.');

@@ -3,6 +3,7 @@ const TherapistReview = require('../models/TherapistReview');
 const Availability = require('../models/Availability');
 const Session = require('../models/Session');
 const Client = require('../models/Client');
+const emailService = require('../services/EmailService');
 
 // Helper to generate time slot intervals
 const generateSlots = (startStr, endStr, durationMins, bufferMins) => {
@@ -173,6 +174,27 @@ const publicBookSession = async (req, res, next) => {
       status: 'pending_approval',
       paymentStatus: 'pending'
     });
+
+    // Send booking confirmation email (best-effort — do not block on failure)
+    try {
+      await emailService.sendMail({
+        to: clientEmail.toLowerCase(),
+        toName: clientName,
+        subject: `Booking Request Received — ${therapist.name}`,
+        html: `
+          <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
+            <h2 style="color:#4f46e5">Booking Request Received</h2>
+            <p>Hi ${clientName},</p>
+            <p>Your appointment request with <strong>${therapist.name}</strong> on <strong>${date}</strong> at <strong>${startTime}</strong> has been received.</p>
+            <p>Once the therapist confirms your slot, you'll receive another email with a link to activate your client account and complete the process.</p>
+            <p>Please keep an eye on your inbox (and spam folder).</p>
+            <p style="color:#6b7280;font-size:14px">— The Unfazed Team</p>
+          </div>
+        `
+      });
+    } catch (emailErr) {
+      console.warn('[publicBookSession] Booking confirmation email failed:', emailErr.message);
+    }
 
     res.status(201).json({
       success: true,

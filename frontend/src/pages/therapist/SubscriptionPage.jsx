@@ -94,6 +94,12 @@ const SubscriptionPage = () => {
           name: 'Unfazed Practice',
           description: `Subscription to ${orderData.plan?.name || planKey}`,
           order_id: orderData.orderId,
+          modal: {
+            ondismiss: () => {
+              setUpgradingKey(null);
+              setErrorMessage('Payment was cancelled.');
+            }
+          },
           handler: async (response) => {
             try {
               const { data: verifyRes } = await api.post('/subscriptions/verify-payment', {
