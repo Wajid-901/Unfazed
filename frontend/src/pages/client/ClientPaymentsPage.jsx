@@ -120,9 +120,11 @@ const ClientPaymentsPage = () => {
           {payments.map((payment) => {
             const isPending = payment.status === 'created';
             const isPaid = payment.status === 'captured';
-            // A payment is payable if it's in 'created' state and has an associated session
+            // A payment is payable if it's in 'created' state, has an associated session,
+            // and that session has not been cancelled
             const sessionId = payment.sessionId?._id || payment.sessionId;
-            const canPay = isPending && sessionId;
+            const sessionCancelled = payment.sessionId?.status === 'cancelled';
+            const canPay = isPending && sessionId && !sessionCancelled;
 
             return (
               <div

@@ -2,6 +2,7 @@ const Session = require('../models/Session');
 const Client = require('../models/Client');
 const Therapist = require('../models/Therapist');
 const Availability = require('../models/Availability');
+const Payment = require('../models/Payment');
 const notificationService = require('../services/NotificationService');
 const emailService = require('../services/EmailService');
 const crypto = require('crypto');
@@ -202,6 +203,22 @@ const updateSessionStatus = async (req, res, next) => {
 
         invalidateCache(req.user.id);
 
+        if (status === 'cancelled') {
+            // Void any pending payment records so Pay Now is no longer shown
+            await Payment.updateMany(
+                { sessionId: session._id, status: 'created' },
+                { $set: { status: 'failed' } }
+            );
+            await notificationService.create({
+                recipientId: session.clientId,
+                recipientModel: 'Client',
+                title: 'Session Cancelled',
+                message: `Your session scheduled for ${session.date} at ${session.startTime} has been cancelled by your therapist.`,
+                type: 'BOOKING',
+                metadata: { sessionId: session._id, cancelledBy: 'therapist' }
+            });
+        }
+
         if (status === 'completed') {
             await notificationService.create({
                 recipientId: session.clientId,
@@ -265,6 +282,12 @@ const cancelClientSession = async (req, res, next) => {
         session.cancelledBy = 'client';
         session.cancellationReason = req.body.reason ? String(req.body.reason).trim() : 'Cancelled by client';
         await session.save();
+
+        // Void any pending payment records for this session so Pay Now is no longer shown
+        await Payment.updateMany(
+            { sessionId: session._id, status: 'created' },
+            { $set: { status: 'failed' } }
+        );
 
         invalidateCache(session.therapistId);
 
@@ -353,6 +376,12 @@ const rejectSession = async (req, res, next) => {
         session.cancelledBy = 'therapist';
         session.cancellationReason = req.body.reason || 'Booking rejected by therapist';
         await session.save();
+
+        // Void any pending payment records so Pay Now is no longer shown
+        await Payment.updateMany(
+            { sessionId: session._id, status: 'created' },
+            { $set: { status: 'failed' } }
+        );
 
         // Remove the client record if they never activated their account
         const client = await Client.findById(session.clientId).select('+password');
