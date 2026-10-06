@@ -89,11 +89,11 @@ const getPublicSlots = async (req, res, next) => {
       allSlots = allSlots.concat(generated);
     }
 
-    // Find already booked sessions on this date
+    // Find already booked sessions on this date (include pending so slot is locked while awaiting approval)
     const bookedSessions = await Session.find({
       therapistId: therapist._id,
       date,
-      status: { $in: ['scheduled', 'in_progress'] }
+      status: { $in: ['pending_approval', 'scheduled', 'in_progress'] }
     }).select('startTime endTime');
 
     const bookedStarts = new Set(bookedSessions.map((s) => s.startTime));
@@ -170,13 +170,14 @@ const publicBookSession = async (req, res, next) => {
       duration,
       amount: therapist.hourlyRate || 1500,
       currency: therapist.currency || 'INR',
-      status: 'scheduled',
+      status: 'pending_approval',
       paymentStatus: 'pending'
     });
 
     res.status(201).json({
       success: true,
-      message: 'Session booked successfully',
+      message: 'Booking request submitted. Awaiting therapist confirmation.',
+      pendingApproval: true,
       booking: {
         sessionId: session._id,
         date: session.date,

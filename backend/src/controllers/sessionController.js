@@ -1,7 +1,10 @@
 const Session = require('../models/Session');
 const Client = require('../models/Client');
+const Therapist = require('../models/Therapist');
 const Availability = require('../models/Availability');
 const notificationService = require('../services/NotificationService');
+const emailService = require('../services/EmailService');
+const crypto = require('crypto');
 const { invalidateCache } = require('./analyticsController');
 
 const getSessions = async (req, res, next) => {
@@ -31,7 +34,7 @@ const getSessions = async (req, res, next) => {
         }
 
         const sessions = await Session.find(query)
-            .populate('clientId', 'name email phone tags')
+            .populate('clientId', 'name email phone tags intakeData')
             .sort({
                 date: 1,
                 startTime: 1
@@ -285,10 +288,83 @@ const cancelClientSession = async (req, res, next) => {
     }
 };
 
+const approveSession = async (req, res, next) => {
+    try {
+        const session = await Session.findOne({
+            _id: req.params.id,
+            therapistId: req.user.id,
+            status: 'pending_approval'
+        });
+        if (!session) {
+            return res.status(404).json({ success: false, message: 'Session not found or already processed' });
+        }
+
+        session.status = 'scheduled';
+        await session.save();
+
+        const client = await Client.findById(session.clientId).select('+password +inviteToken +inviteTokenExpires');
+        if (client && !client.password) {
+            const rawToken = crypto.randomBytes(32).toString('hex');
+            client.inviteToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+            client.inviteTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+            await client.save();
+
+            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+            const inviteLink = `${frontendUrl}/client/setup-password?token=${rawToken}`;
+
+            const therapist = await Therapist.findById(req.user.id).select('name');
+            await emailService.sendClientInvite({
+                toEmail: client.email,
+                toName: client.name,
+                therapistName: therapist?.name || 'Your therapist',
+                inviteLink
+            });
+        }
+
+        invalidateCache(req.user.id);
+
+        res.status(200).json({ success: true, message: 'Session approved and invite sent to client.', session });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const rejectSession = async (req, res, next) => {
+    try {
+        const session = await Session.findOne({
+            _id: req.params.id,
+            therapistId: req.user.id,
+            status: 'pending_approval'
+        });
+        if (!session) {
+            return res.status(404).json({ success: false, message: 'Session not found or already processed' });
+        }
+
+        session.status = 'cancelled';
+        session.cancelledBy = 'therapist';
+        session.cancellationReason = req.body.reason || 'Booking rejected by therapist';
+        await session.save();
+
+        // Remove the client record if they never activated their account
+        const client = await Client.findById(session.clientId).select('+password');
+        if (client && client.consentSignedAt == null && !client.password) {
+            await Client.deleteOne({ _id: client._id });
+        }
+
+        invalidateCache(req.user.id);
+
+        res.status(200).json({ success: true, message: 'Session rejected.' });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     getSessions,
     createSession,
     updateSessionStatus,
     getClientSessions,
-    cancelClientSession
+    cancelClientSession,
+    approveSession,
+    rejectSession
 };

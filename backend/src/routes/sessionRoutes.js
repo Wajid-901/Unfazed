@@ -7,16 +7,20 @@ const {
     createSession,
     updateSessionStatus,
     getClientSessions,
-    cancelClientSession
+    cancelClientSession,
+    approveSession,
+    rejectSession
 } = require('../controllers/sessionController');
 
-// CLIENT route — must come before /:id wildcards (none here, but good practice)
+// CLIENT routes
 router.get('/mine', authenticate, authorize('CLIENT'), getClientSessions);
 router.patch('/:id/cancel', authenticate, authorize('CLIENT'), cancelClientSession);
 
 // THERAPIST routes
 router.get('/', authenticate, authorize('THERAPIST'), getSessions);
 router.post('/', authenticate, authorize('THERAPIST'), createSession);
+router.patch('/:id/approve', authenticate, authorize('THERAPIST'), approveSession);
+router.patch('/:id/reject', authenticate, authorize('THERAPIST'), rejectSession);
 router.put('/:id', authenticate, authorize('THERAPIST'), updateSessionStatus);
 
 module.exports = router;

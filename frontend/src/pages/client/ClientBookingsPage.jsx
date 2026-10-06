@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import Badge from '../../components/common/Badge';
 import RazorpayCheckout from '../../components/common/RazorpayCheckout';
-import { Calendar, Clock, Video, ExternalLink, XCircle, CheckCircle, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, Video, ExternalLink, XCircle } from 'lucide-react';
 
 const sessionStatusVariant = (status) => {
   if (status === 'completed') return 'success';
   if (status === 'scheduled') return 'warning';
+  if (status === 'pending_approval') return 'warning';
   if (status === 'cancelled') return 'danger';
   if (status === 'no_show') return 'danger';
   return 'neutral';
@@ -26,7 +28,6 @@ const ClientBookingsPage = () => {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cancellingId, setCancellingId] = useState(null);
-  const [feedback, setFeedback] = useState(null);
 
   const fetchSessions = async () => {
     try {
@@ -58,34 +59,25 @@ const ClientBookingsPage = () => {
         reason: 'Cancelled by client via portal'
       });
       if (data.success) {
-        setFeedback({ type: 'success', message: 'Session cancelled successfully.' });
+        toast.success('Session cancelled successfully.');
         setSessions((prev) =>
           prev.map((s) => (s._id === sessionId ? { ...s, status: 'cancelled', cancelledBy: 'client' } : s))
         );
       }
     } catch (err) {
-      setFeedback({
-        type: 'error',
-        message: err.response?.data?.message || 'Failed to cancel session.'
-      });
+      toast.error(err.response?.data?.message || 'Failed to cancel session.');
     } finally {
       setCancellingId(null);
     }
   };
 
   const handlePaymentSuccess = (payment) => {
-    setFeedback({
-      type: 'success',
-      message: `Payment of ₹${payment?.amount || ''} captured successfully! Invoice: ${payment?.invoiceNumber || ''}`
-    });
+    toast.success(`Payment of ₹${payment?.amount || ''} captured! Invoice: ${payment?.invoiceNumber || ''}`);
     fetchSessions();
   };
 
   const handlePaymentError = (errMsg) => {
-    setFeedback({
-      type: 'error',
-      message: errMsg || 'Payment failed or was cancelled.'
-    });
+    toast.error(errMsg || 'Payment failed or was cancelled.');
   };
 
   return (
@@ -100,32 +92,6 @@ const ClientBookingsPage = () => {
           All your scheduled and past therapy sessions
         </p>
       </div>
-
-      {feedback && (
-        <div
-          className={`p-4 rounded-xl border flex items-center justify-between text-xs ${
-            feedback.type === 'success'
-              ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-              : 'bg-rose-50 border-rose-200 text-rose-800'
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            {feedback.type === 'success' ? (
-              <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-            ) : (
-              <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
-            )}
-            <span>{feedback.message}</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setFeedback(null)}
-            className="text-xs font-semibold opacity-70 hover:opacity-100 underline ml-4"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
 
       {/* Sessions List */}
       {loading ? (
@@ -149,6 +115,7 @@ const ClientBookingsPage = () => {
               session.paymentStatus === 'pending' && session.status === 'scheduled';
             const canCancel =
               session.status === 'scheduled';
+            const isPending = session.status === 'pending_approval';
 
             return (
               <div
@@ -174,12 +141,17 @@ const ClientBookingsPage = () => {
                       Therapist:{' '}
                       <span className="font-semibold text-[#1C1C1A]">{therapistName}</span>
                     </p>
+                    {isPending && (
+                      <p className="text-xs text-amber-600 pl-0.5">
+                        Awaiting therapist confirmation. You'll receive an activation email once approved.
+                      </p>
+                    )}
                   </div>
 
-                  {/* Right: Badges & action */}
+                  {/* Right: Badges & actions */}
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant={sessionStatusVariant(session.status)}>
-                      {session.status?.replace('_', ' ')}
+                      {session.status?.replace(/_/g, ' ')}
                     </Badge>
                     {session.paymentStatus && (
                       <Badge variant={paymentStatusVariant(session.paymentStatus)}>

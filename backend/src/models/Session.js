@@ -33,7 +33,7 @@ const sessionSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['scheduled', 'in_progress', 'completed', 'cancelled', 'no_show'],
+      enum: ['pending_approval', 'scheduled', 'in_progress', 'completed', 'cancelled', 'no_show'],
       default: 'scheduled',
       index: true
     },
@@ -71,12 +71,12 @@ const sessionSchema = new mongoose.Schema(
   }
 );
 
-// Prevent double booking for active/scheduled sessions at the same slot
+// Prevent double booking for active/scheduled/pending sessions at the same slot
 sessionSchema.index(
   { therapistId: 1, date: 1, startTime: 1 },
   {
     unique: true,
-    partialFilterExpression: { status: { $in: ['scheduled', 'in_progress'] } }
+    partialFilterExpression: { status: { $in: ['pending_approval', 'scheduled', 'in_progress'] } }
   }
 );
 

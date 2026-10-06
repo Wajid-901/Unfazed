@@ -11,7 +11,6 @@ const LoginPage = () => {
   const [searchParams] = useSearchParams();
   const { login } = useAuth();
 
-  // If redirected from booking page (guest tried to pay), default to client tab
   const redirectTo = location.state?.redirectTo;
   const redirectMessage = location.state?.message;
 

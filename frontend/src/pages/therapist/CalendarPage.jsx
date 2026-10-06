@@ -1,21 +1,20 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import api from '../../api/axios';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
 import Modal from '../../components/common/Modal';
-import { Calendar as CalendarIcon, Clock, Plus, Check, AlertCircle, Trash2 } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, Plus, Check, Trash2, CheckCircle2, XCircle } from 'lucide-react';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 const CalendarPage = () => {
-  const [activeTab, setActiveTab] = useState('bookings'); // 'bookings' or 'availability'
+  const [activeTab, setActiveTab] = useState('bookings');
   const [sessions, setSessions] = useState([]);
   const [clients, setClients] = useState([]);
   const [availability, setAvailability] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [saveSuccess, setSaveSuccess] = useState(false);
 
-  // New session modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newSession, setNewSession] = useState({
     clientId: '',
@@ -24,6 +23,10 @@ const CalendarPage = () => {
     duration: 50,
     amount: 1500
   });
+
+  // Track in-flight approve/reject actions
+  const [approvingId, setApprovingId] = useState(null);
+  const [rejectingId, setRejectingId] = useState(null);
 
   const fetchData = async () => {
     try {
@@ -46,6 +49,35 @@ const CalendarPage = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const pendingSessions = sessions.filter((s) => s.status === 'pending_approval');
+  const otherSessions = sessions.filter((s) => s.status !== 'pending_approval');
+
+  const handleApprove = async (sessionId) => {
+    setApprovingId(sessionId);
+    try {
+      await api.patch(`/sessions/${sessionId}/approve`);
+      toast.success('Session approved — activation link sent to client.');
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to approve session.');
+    } finally {
+      setApprovingId(null);
+    }
+  };
+
+  const handleReject = async (sessionId) => {
+    setRejectingId(sessionId);
+    try {
+      await api.patch(`/sessions/${sessionId}/reject`);
+      toast.success('Booking rejected.');
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to reject session.');
+    } finally {
+      setRejectingId(null);
+    }
+  };
 
   const handleDayToggle = (dayOfWeek) => {
     const updated = availability.weeklySchedule.map((d) => {
@@ -79,10 +111,9 @@ const CalendarPage = () => {
   const handleSaveAvailability = async () => {
     try {
       await api.put('/therapist/availability', availability);
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
+      toast.success('Availability saved.');
     } catch (err) {
-      console.error('Failed to save availability:', err);
+      toast.error(err.response?.data?.message || 'Failed to save availability.');
     }
   };
 
@@ -93,7 +124,7 @@ const CalendarPage = () => {
       setIsModalOpen(false);
       fetchData();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to book slot');
+      toast.error(err.response?.data?.message || 'Failed to book slot.');
     }
   };
 
@@ -108,7 +139,7 @@ const CalendarPage = () => {
               activeTab === 'bookings' ? 'bg-white text-[#1C1C1A] shadow-sm' : 'text-[#6B6860] hover:text-[#1C1C1A]'
             }`}
           >
-            Scheduled Appointments ({sessions.length})
+            Scheduled Appointments ({otherSessions.length})
           </button>
           <button
             onClick={() => setActiveTab('availability')}
@@ -128,66 +159,113 @@ const CalendarPage = () => {
       </div>
 
       {activeTab === 'bookings' ? (
-        /* Bookings List */
-        <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-            <h3 className="text-sm font-bold text-slate-900">Upcoming & Past Appointments</h3>
-            <span className="text-xs text-slate-500">Sorted by date</span>
-          </div>
-
-          {loading ? (
-            <div className="py-12 text-center text-xs text-slate-400">Loading appointments...</div>
-          ) : sessions.length > 0 ? (
-            <div className="divide-y divide-slate-100">
-              {sessions.map((sess) => (
-                <div key={sess._id} className="p-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/50 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-brand-50 text-brand-600 flex flex-col items-center justify-center font-bold">
-                      <span className="text-xs">{sess.date.split('-').slice(1).join('/')}</span>
-                      <span className="text-[11px] text-brand-400 font-normal">{sess.startTime}</span>
+        <div className="space-y-6">
+          {/* Pending Approval Requests */}
+          {pendingSessions.length > 0 && (
+            <div className="bg-amber-50 rounded-xl border border-amber-200 overflow-hidden">
+              <div className="px-6 py-4 border-b border-amber-200 flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                <h3 className="text-sm font-bold text-amber-900">
+                  Pending Approval Requests ({pendingSessions.length})
+                </h3>
+              </div>
+              <div className="divide-y divide-amber-100">
+                {pendingSessions.map((sess) => (
+                  <div key={sess._id} className="p-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex flex-col items-center justify-center font-bold">
+                        <span className="text-xs">{sess.date.split('-').slice(1).join('/')}</span>
+                        <span className="text-[11px] text-amber-500 font-normal">{sess.startTime}</span>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-semibold text-slate-900">{sess.clientId?.name || 'Client'}</h4>
+                        <p className="text-xs text-slate-400">{sess.clientId?.email}</p>
+                        {sess.clientId?.intakeData?.presentingConcerns && (
+                          <p className="text-xs text-slate-500 mt-0.5 italic">
+                            &ldquo;{sess.clientId.intakeData.presentingConcerns}&rdquo;
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="text-sm font-semibold text-slate-900">{sess.clientId?.name || 'Client'}</h4>
-                      <p className="text-xs text-slate-400">
-                        {sess.clientId?.email} • {sess.clientId?.phone || 'No phone'}
-                      </p>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleApprove(sess._id)}
+                        disabled={approvingId === sess._id || rejectingId === sess._id}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        {approvingId === sess._id ? 'Approving…' : 'Approve'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleReject(sess._id)}
+                        disabled={approvingId === sess._id || rejectingId === sess._id}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-rose-100 text-rose-700 border border-rose-200 rounded-lg hover:bg-rose-200 transition-colors disabled:opacity-50"
+                      >
+                        <XCircle className="w-3.5 h-3.5" />
+                        {rejectingId === sess._id ? 'Rejecting…' : 'Reject'}
+                      </button>
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-3">
-                    <Badge variant={sess.status === 'completed' ? 'success' : 'primary'}>
-                      {sess.status}
-                    </Badge>
-                    <Badge variant={sess.paymentStatus === 'paid' ? 'success' : 'warning'}>
-                      ₹{sess.amount} • {sess.paymentStatus}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="py-16 text-center">
-              <CalendarIcon className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-              <p className="text-sm font-medium text-slate-600">No appointments scheduled yet</p>
-              <p className="text-xs text-slate-400 mt-1">Use "Book Client Slot" or share your clinic link.</p>
+                ))}
+              </div>
             </div>
           )}
+
+          {/* Confirmed Appointments List */}
+          <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-slate-900">Upcoming & Past Appointments</h3>
+              <span className="text-xs text-slate-500">Sorted by date</span>
+            </div>
+
+            {loading ? (
+              <div className="py-12 text-center text-xs text-slate-400">Loading appointments...</div>
+            ) : otherSessions.length > 0 ? (
+              <div className="divide-y divide-slate-100">
+                {otherSessions.map((sess) => (
+                  <div key={sess._id} className="p-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/50 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-brand-50 text-brand-600 flex flex-col items-center justify-center font-bold">
+                        <span className="text-xs">{sess.date.split('-').slice(1).join('/')}</span>
+                        <span className="text-[11px] text-brand-400 font-normal">{sess.startTime}</span>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-semibold text-slate-900">{sess.clientId?.name || 'Client'}</h4>
+                        <p className="text-xs text-slate-400">
+                          {sess.clientId?.email} • {sess.clientId?.phone || 'No phone'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Badge variant={sess.status === 'completed' ? 'success' : 'primary'}>
+                        {sess.status}
+                      </Badge>
+                      <Badge variant={sess.paymentStatus === 'paid' ? 'success' : 'warning'}>
+                        ₹{sess.amount} • {sess.paymentStatus}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-16 text-center">
+                <CalendarIcon className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+                <p className="text-sm font-medium text-slate-600">No appointments scheduled yet</p>
+                <p className="text-xs text-slate-400 mt-1">Use "Book Client Slot" or share your clinic link.</p>
+              </div>
+            )}
+          </div>
         </div>
       ) : (
-        /* Availability Configuration (US-005) */
+        /* Availability Configuration */
         <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-6 max-w-3xl">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-base font-bold text-slate-900">Weekly Availability Schedule</h3>
-              <p className="text-xs text-slate-500">
-                Define the recurring hours clients can book on your public profile.
-              </p>
-            </div>
-            {saveSuccess && (
-              <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-semibold bg-emerald-50 px-2.5 py-1 rounded-md">
-                <Check className="w-3.5 h-3.5" /> Saved!
-              </span>
-            )}
+          <div>
+            <h3 className="text-base font-bold text-slate-900">Weekly Availability Schedule</h3>
+            <p className="text-xs text-slate-500">
+              Define the recurring hours clients can book on your public profile.
+            </p>
           </div>
 
           <div className="space-y-3">
@@ -279,9 +357,8 @@ const CalendarPage = () => {
                 className="w-full text-sm border border-[#E8E4DC] rounded-lg p-2 focus:ring-2 focus:ring-brand-400 outline-none bg-[#FAF8F4]"
               />
             </div>
-
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Start Time</label>
+              <label className="block text-xs font-semibold text-[#1C1C1A] mb-1">Start Time</label>
               <input
                 type="time"
                 required
@@ -294,7 +371,7 @@ const CalendarPage = () => {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Duration (Mins)</label>
+              <label className="block text-xs font-semibold text-[#1C1C1A] mb-1">Duration (Mins)</label>
               <input
                 type="number"
                 value={newSession.duration}
@@ -303,7 +380,7 @@ const CalendarPage = () => {
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Session Fee (₹)</label>
+              <label className="block text-xs font-semibold text-[#1C1C1A] mb-1">Session Fee (₹)</label>
               <input
                 type="number"
                 value={newSession.amount}

@@ -43,3 +43,6 @@ Thumbs.db
 build_result.txt
 commit_result.txt
 build_log*.txt
+
+# Workflow agent artifacts (planning files, not project code)
+.agents/
